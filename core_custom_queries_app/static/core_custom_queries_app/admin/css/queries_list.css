@@ -1,0 +1,13 @@
+.custom-toolbar {
+    margin: 0.2em;
+}
+
+.empty {
+    text-align: center;
+    font-style: italic;
+}
+
+/* Table Configuration */
+#queries-list>thead>tr th {
+    width: 25%;
+}

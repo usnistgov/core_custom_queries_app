@@ -1,0 +1,58 @@
+{% extends 'core_main_app/_render/admin/theme/tools/box.html' %}
+{% load staticfiles %}
+
+{% block box_title %} Build query{% endblock %}
+{% block box_body %}
+
+<form id="form_custom_queries" action="#" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+
+    <h4>General Information</h4>
+    {% if data.form.non_field_errors %}
+    <div class="alert alert-warning">
+        Some errors occurred with the current form. Please correct them before saving.
+        {{ data.form.non_field_errors }}
+    </div>
+    {% endif %}
+
+
+    {% include "core_custom_queries_app/admin/forms/field.html" with form=data.form %}
+
+    <h4>Step Configuration</h4>
+    {{ data.query_piece_form.management_form }}
+    <div id="formsetZone">
+        {% for form in data.formset %}
+            <div class="nsorte">
+                {% include "core_custom_queries_app/admin/forms/field.html" with form=form %}
+            </div>
+        {% endfor %}
+    </div>
+    {% if data.query_piece_form.extra == 1 %}
+        <button class="btn btn-success" id="bt_add_sorte" type="button">
+            <i class="fa fa-plus"></i> Add step
+        </button>
+    {% endif %}
+
+    <hr/>
+    <button class="btn btn-default">
+        <i class='fa fa-floppy-o'></i>
+        Save Query
+    </button>
+</form>
+
+<div style="display:none;">
+    {{ data.query_piece_form.empty_form }}
+    <div id="eform" class="nsorte" >
+        <div class="content-separator"></div>
+        <hr/>
+        {% for form in data.query_piece_form %}
+            {% include "core_custom_queries_app/admin/forms/field.html" with form=form %}
+        {% endfor %}
+        <div class='btn btn-warning bt_rm_sorte'>
+                <i class='glyphicon glyphicon-trash'></i> Delete Step
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

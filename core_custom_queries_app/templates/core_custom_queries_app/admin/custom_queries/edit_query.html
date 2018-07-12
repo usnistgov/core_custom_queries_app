@@ -1,0 +1,82 @@
+{% extends 'core_main_app/_render/admin/theme/tools/box.html' %}
+{% load staticfiles %}
+
+{% block box_title %} Edit the Query{% endblock %}
+{% block box_body %}
+
+<form id="form_custom_queries" action="#" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <h4>General Information</h4>
+    {% if data.form.non_field_errors %}
+    <div class="alert alert-warning">
+        Some errors occured with the current form. Please correct them before saving.
+        {{ data.form.non_field_errors }}
+    </div>
+    {% endif %}
+    {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+    {% endfor %}
+    {% include "core_custom_queries_app/admin/forms/field.html" with form=data.form%}
+    <hr/>
+    <h4>Step Configuration</h4>
+    {{ data.query_piece_form.management_form }}
+    <div id="formsetZone">
+        {% for form in data.formset %}
+            {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+            {% endfor %}
+            <div class="nsorte">
+                {% for field in form %}
+                    {% if not field.is_hidden %}
+                    <div class="form-group">
+                        <div class="col-xs-2">
+                            {{ field.label_tag }}
+                        </div>
+                        <div class="col-xs-4">
+                            {{ field }}
+                        </div>
+                        <div class="col-xs-6">
+                            {% if field.errors %}
+                                <span class="alert alert-danger">
+                                    <i class="fa fa-times-circle"></i>
+                                    {% for error in field.errors %}
+                                        {{ error }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </span>
+                            {% endif %}
+                        </div><br>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <hr/>
+        {% endfor %}
+    </div>
+    <button class="btn btn-default" style="float: Left;">
+        Save modification
+    </button>
+</form>
+
+<button class="btn btn-default delete-query" style="float: Right;">
+    Delete
+</button>
+
+<div class="hidden" id="query_id">{{data.query_id}}</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

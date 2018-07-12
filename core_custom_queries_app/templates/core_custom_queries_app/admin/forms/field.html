@@ -1,0 +1,17 @@
+{% for field in form %}
+    {% if not field.is_hidden %}
+    <div class="form-group">
+        <div> {{ field.label_tag }} </div>
+        {{ field }}
+
+        {% if field.errors %}
+            <span class="alert alert-danger">
+                <i class="fa fa-times-circle"></i>
+                {% for error in field.errors %}
+                    {{ error }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </span>
+        {% endif %}
+    </div>
+    {% endif %}
+{% endfor %}
