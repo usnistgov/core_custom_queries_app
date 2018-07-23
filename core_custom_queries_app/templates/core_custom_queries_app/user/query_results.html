@@ -1,0 +1,22 @@
+<h2>View and Download Results for {{data.query_name}}</h2>
+
+<p>
+    Choose the format you are interested in. Then you can preview and/or download it.
+</p>
+
+<form id="form_custom_queries" enctype="multipart/form-data" method="post"
+      action="{% url 'core_custom_queries_app_download' %}">
+    {% csrf_token %}
+    {{ data.form.as_table }}
+</form>
+<button class="btn btn-default" onclick="downloadfile()" data-btn-text="Download" style="float: Left;">
+    <i class="fa fa-download" aria-hidden="true"></i>
+        Download
+</button>
+<button class="btn btn-default" onclick="previewFile()" data-btn-text="Preview" style="float: Right;">
+<i class="fa fa-search" aria-hidden="true"></i>
+Preview
+</button>
+<br>
+
+<textarea readonly id="filePreviewCustomQueries" style="width: 100%; height: 20em;" accept-charset="utf-8"></textarea>

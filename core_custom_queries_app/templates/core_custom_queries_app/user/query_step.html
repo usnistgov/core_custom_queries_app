@@ -1,0 +1,55 @@
+
+<h2>Submit query step {{ data.position_to_show }} of {{ data.nb_step_to_show }} for {{ data.query_name }}</h2>
+
+<p>
+   Submit query step. When you are done, the next step or the result will automatically load.
+</p>
+
+<input id="id_first_step" name="first_step" value="{{ data.first_step }}" type="hidden" >
+<form id="form_custom_queries" enctype="multipart/form-data" method="post">
+{% csrf_token %}
+    {% if data.nextStepType == "date" %}
+        {% for hidden in data.form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+        <tr>
+            <td>{{data.form.timeFrom.label}}:</td>
+            <br>
+            <td>
+                <div class="input-append date form_datetime input-group">
+                    {{data.form.timeFrom}}
+                    <span class="input-group-addon">
+                        <i class="glyphicon glyphicon-calendar" onclick="$('#{{data.form.timeFrom.id_for_label}}').focus();">
+                        </i>
+                    </span>
+                </div>
+            </td>
+        </tr>
+        <br>
+        <tr>
+            <td>{{data.form.timeTo.label}}:</td>
+            <br>
+            <td>
+                <div class="input-append date form_datetime input-group">
+                    {{data.form.timeTo}}
+                    <span class="input-group-addon">
+                        <i class="glyphicon glyphicon-calendar" onclick="$('#{{data.form.timeTo.id_for_label}}').focus();"></i>
+                    </span>
+                </div>
+            </td>
+        </tr>
+        <br>
+        <br>
+    {% else %}
+        {{ data.form }}
+    {% endif %}
+    <br>
+
+    <button class="button-left btn btn-default has-spinner" id="id_prev_button" data-btn-text="Go back">Go back</button>
+
+    {% if data.position_to_show == data.nb_step_to_show %}
+        <button class="button-right btn btn-default has-spinner" data-btn-text="Complete query step">Complete query step</button>
+    {% else %}
+        <button class="button-right btn btn-default has-spinner" data-btn-text="Next step">Next step</button>
+    {% endif %}
+</form>

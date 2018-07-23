@@ -2,6 +2,7 @@
 """
 from core_custom_queries_app.components.dyn_query.models import DynQuery
 from core_custom_queries_app.components.dyn_query_step import api as dyn_query_step_api
+from core_custom_queries_app.components.temp_user_query import api as temp_user_query_api
 
 
 def upsert(dyn_query):
@@ -51,8 +52,7 @@ def delete(dyn_query):
         dyn_query_step_api.delete(step)
 
     # delete linked temp user queries
-    # FIXME: restore that code once TempUserQuery object brought back
-    # tempQueries = TempUserQuery.objects.filter(query=self)
-    # for tempQuery in tempQueries:
-    #     tempQuery.delete_database()
+    temp_queries = temp_user_query_api.get_all().filter(query=dyn_query)
+    for temp_query in temp_queries:
+        temp_query.delete_database()
     dyn_query.delete()

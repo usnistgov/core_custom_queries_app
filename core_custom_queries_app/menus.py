@@ -4,6 +4,10 @@ from django.core.urlresolvers import reverse
 from menu import Menu, MenuItem
 
 
+Menu.add_item(
+    "main", MenuItem("Query Repository", reverse("core_custom_queries_app_index"))
+)
+
 types_children = (
     MenuItem("Custom Queries List", reverse("admin:core_custom_queries_app_queries"), icon="list"),
 )
