@@ -1,0 +1,5 @@
+{% if data.number_log_files > 0 %}
+    {% for form_detail in data.formset_detail %}
+        {% include 'core_custom_queries_app/admin/log_files/modals/edit.html' %}
+    {% endfor %}
+{% endif %}

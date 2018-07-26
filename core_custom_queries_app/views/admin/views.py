@@ -1,7 +1,6 @@
 """
 Describe all the view admin-only
 """
-
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.forms import formset_factory
@@ -12,10 +11,12 @@ from core_custom_queries_app.components.dyn_query import api as dyn_query_api
 from core_custom_queries_app.components.dyn_query.models import DynQuery
 from core_custom_queries_app.components.dyn_query_step import api as dyn_query_step_api
 from core_custom_queries_app.components.dyn_query_step.models import DynQueryStep
-from core_custom_queries_app.views.admin.forms import Query, QueryPieceForm
+from core_custom_queries_app.components.log_file import api as log_file_api
+from core_custom_queries_app.views.admin.forms import Query, QueryPieceForm, LogFilesFormPreview, LogFilesFormDetails
 from core_main_app.commons.exceptions import DoesNotExist, ModelError
 from core_main_app.components.template import api as template_api
 from core_main_app.components.template_version_manager import api as template_version_manager_api
+from core_main_app.utils.pagination.django_paginator.results_paginator import ResultsPaginator
 from core_main_app.utils.rendering import admin_render
 
 
@@ -296,4 +297,113 @@ def edit_query(request, query_id):
                         'core_custom_queries_app/admin/update_query.html',
                         modals=modals,
                         assets=assets,
+                        context=context)
+
+
+@staff_member_required
+def list_errors(request):
+    """View and delete log files from the database.
+    Used by the admin.
+    Create a form set with the log files information. The log file could be deleted.
+    The log files are viewed with pagination.
+    If no log files are in the database, an error message will be shown.
+
+    :param request: Django HttpRequest
+        _no Params at first instance, page from pagination if page change
+        _POST dictionary when come back from admin_list_errors web page with the log files which
+         will be deleted.
+    """
+
+    # Query(ies) witch will be deleted
+    if request.method == "POST":
+        number_forms = int(request.POST['form-TOTAL_FORMS'])
+        log_file_formset = formset_factory(LogFilesFormPreview, extra=number_forms, can_delete=True)
+        formset = log_file_formset(request.POST, request.FILES)
+
+        if formset.is_valid():
+            for form in formset.deleted_forms:
+                data = form.cleaned_data
+                if 'DELETE' in data:
+                    id_object = data['id']
+                    try:
+                        logfile = log_file_api.get_by_id(id_object)
+                        logfile.delete_database()
+                    except:
+                        pass
+
+    # Get the log files
+    log_file_list = log_file_api.get_all().order_by("-timestamp")
+
+    # Get the page if page change
+    page = request.GET.get('page', 1)
+    result_paginator = ResultsPaginator()
+    log_files = result_paginator.get_results(log_file_list, page)
+    number_log_files = len(log_files)
+
+    # Create a form set with the log files' information
+    log_file_formset = formset_factory(LogFilesFormPreview, extra=number_log_files, can_delete=True)
+
+    log_file_details_formset = formset_factory(LogFilesFormDetails, extra=number_log_files)
+
+    data = dict()
+    data['form-TOTAL_FORMS'] = number_log_files
+    data['form-INITIAL_FORMS'] = number_log_files
+    data['form-MAX_NUM_FORMS'] = number_log_files
+
+    data_details = dict()
+    data_details['form-TOTAL_FORMS'] = number_log_files
+    data_details['form-INITIAL_FORMS'] = number_log_files
+    data_details['form-MAX_NUM_FORMS'] = number_log_files
+
+    position = 0
+
+    for log_file in log_files:
+        additional = ''
+        for key, value in log_file['additionalInformation'].iteritems():
+            additional += str(key) + ": " + str(value) + "\r\n"
+
+        data_details['form-' + str(position) + '-id'] = str(log_file["id"])
+        data_details['form-' + str(position) + '-timestamp'] = log_file["timestamp"]
+        data_details['form-' + str(position) + '-code'] = log_file["code"]
+        data_details['form-' + str(position) + '-application'] = log_file["application"]
+        data_details['form-' + str(position) + '-message'] = log_file["message"]
+        data_details['form-' + str(position) + '-additional'] = additional
+
+        data['form-' + str(position) + '-id'] = str(log_file["id"])
+        data['form-' + str(position) + '-timestamp'] = log_file["timestamp"]
+        data['form-' + str(position) + '-application'] = log_file["application"]
+        data['form-' + str(position) + '-message'] = log_file["message"]
+        data['form-' + str(position) + '-DELETE'] = ''
+
+        position += 1
+
+    formset = log_file_formset(data)
+    formset_detail = log_file_details_formset(data_details)
+
+    if len(log_files) == 0:
+        messages.add_message(request, messages.INFO, "There is no error to show.")
+
+    assets = {
+        "js": [
+            {
+                "path": 'core_custom_queries_app/admin/js/custom_queries.js',
+                "is_raw": False
+            },
+        ],
+    }
+    modals = ['core_custom_queries_app/admin/log_files/modals/edit_modals.html']
+
+    context = {
+        'number_log_files': number_log_files,
+        'log_file_formset': log_file_formset,
+        'formset': formset,
+        'log_files': log_files,
+        'log_file_details_formset': log_file_details_formset,
+        'formset_detail': formset_detail
+    }
+
+    return admin_render(request,
+                        'core_custom_queries_app/admin/listing_errors.html',
+                        assets=assets,
+                        modals=modals,
                         context=context)

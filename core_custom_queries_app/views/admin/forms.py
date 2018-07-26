@@ -305,3 +305,69 @@ class Query(forms.Form):
                         self.add_error('number_records', "The number of records has to be a positive integer.")
                 else:
                     self.add_error('number_records', "The number of records has to be filled")
+
+
+class LogFilesFormPreview(forms.Form):
+    """
+    Form preview log files, give basic information
+    """
+
+    # Log file id - Hidden field
+    id = forms.CharField(required=True,
+                         widget=forms.widgets.HiddenInput())
+
+    # Application link to the log file - Text field
+    application = forms.CharField(label='Application',
+                                  required=True,
+                                  widget=forms.TextInput(attrs={'class': 'full_item', 'readonly': 'true'})
+                                  )
+
+    # Timestamp link to the log file - Text field
+    timestamp = forms.DateTimeField(required=True,
+                                    widget=forms.TextInput(attrs={'class': 'full_item', 'readonly': 'true'})
+                                    )
+
+    # Log file message - Text field
+    message = forms.CharField(label='Error message',
+                              required=True,
+                              widget=forms.TextInput(attrs={'class': 'full_item', 'readonly': 'true'})
+                              )
+
+
+class LogFilesFormDetails(forms.Form):
+    """
+        Form detail log files, give full information
+    """
+
+    # Log file id - Hidden field
+    id = forms.CharField(required=True,
+                         widget=forms.widgets.HiddenInput())
+
+    # Application link to the log file - Text field
+    application = forms.CharField(label='Application',
+                                  required=True,
+                                  widget=forms.TextInput(attrs={'class': 'full_item', 'readonly': 'true'})
+                                  )
+
+    # Timestamp link to the log file - Text field
+    timestamp = forms.DateTimeField(required=True,
+                                    widget=forms.TextInput(attrs={'class': 'full_item', 'readonly': 'true'})
+                                    )
+
+    # Log file code - Text field
+    code = forms.CharField(label='Error code',
+                           required=False,
+                           widget=forms.TextInput(attrs={'class': 'full_item', 'readonly': 'true'})
+                           )
+
+    # Log file message - Text field
+    message = forms.CharField(label='Error message',
+                              required=True,
+                              widget=forms.TextInput(attrs={'class': 'full_item', 'readonly': 'true'})
+                              )
+
+    # Log file additional information, presented by a dictionary - Textarea field
+    additional = forms.CharField(label='Additional information',
+                                 required=False,
+                                 widget=forms.Textarea(attrs={'class': 'additional_element', 'readonly': 'true'})
+                                 )

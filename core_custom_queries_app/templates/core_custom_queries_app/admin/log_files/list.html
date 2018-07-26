@@ -1,0 +1,97 @@
+{% extends 'core_main_app/_render/admin/theme/tools/box.html' %}
+{% load staticfiles %}
+
+{% block box_title %} Log Files{% endblock %}
+
+{% block box_body %}
+    {% if data.number_log_files > 0 %}
+        <button class="btn btn-default" onclick="select_all_log_files();" >
+            <i class="fa fa-check-square-o" aria-hidden="true" title="Align Left"></i>
+                Select all
+        </button>
+
+        <form id="form_log_files" action="#" enctype="multipart/form-data" method="post">
+            {% csrf_token %}
+            {{ data.log_file_formset.management_form }}
+            {{ data.formset.non_form_errors.as_ul }}
+            <table id="formset" class="table table-hover container-fluid">
+                {% for form in data.formset.forms %}
+                    {% if forloop.first %}
+                        <thead><tr>
+                            {% for field in form.visible_fields %}
+                                {% if field.label|capfirst == "Application" %}
+                                    <th class="text-center col-xs-2">{{ field.label|capfirst }}</th>
+                                {% elif field.label|capfirst == "Timestamp" %}
+                                    <th class="text-center col-xs-3">{{ field.label|capfirst }}</th>
+                                {% elif field.label|capfirst == "Error message" %}
+                                    <th class="text-center col-xs-5">{{ field.label|capfirst }}</th>
+                                {% elif field.label|capfirst == "Delete" %}
+                                    <th class="text-center col-xs-1">{{ field.label|capfirst }}</th>
+                                {% endif %}
+                            {% endfor %}
+                            <th class="text-center col-xs-2"></th></thead>
+                        </tr>
+                    {% endif %}
+                    <tr>
+                    {% for field in form.visible_fields %}
+                        <td class="log_file">
+                            {# Include the hidden fields in the form #}
+                            {% if forloop.first %}
+                                {% for hidden in form.hidden_fields %}
+                                {{ hidden }}
+                                {% endfor %}
+                            {% endif %}
+                            {{ field.errors.as_ul }}
+                            {% if field.label|capfirst == "Timestamp" %}
+                                <span style="display:none"> {{ field }} </span>
+                                {{ field.value|date:"D j M Y, H:i:s" }}
+                            {% elif field.label|capfirst == "Delete" %}
+                                {{ field }}
+                            {% else %}
+                                <span style="display:none"> {{ field }} </span>
+                                {{ field.value }}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                    <td class="col-xs-1 text-center">
+                        <button class="detail_btn btn btn-default detail-log"
+                                value="{{ form.id.value }}"
+                                type="button">
+                            <i class="fa fa-search" aria-hidden="true" title="Align Left"></i>
+                            More details
+                        </button>
+                    </td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+
+            <button class="btn btn-default" style="text-decoration:none" form="form_log_files">
+                <i class="fa fa-trash" title="Align Left"></i>
+                Delete selected errors
+            </button>
+        </form>
+        <br>
+        <br>
+        <div class="pagination">
+            <span class="step-links">
+                {% if data.log_files.has_previous %}
+                    <a href="?page={{ data.log_files.previous_page_number }}" class="btn btn-default" >
+                        Previous
+                    </a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ data.log_files.number }} / {{ data.log_files.paginator.num_pages }}
+                </span>
+
+                {% if data.log_files.has_next %}
+                    <a href="?page={{ data.log_files.next_page_number }}" class="btn btn-default" >
+                        Next
+                    </a>
+                {% endif %}
+            </span>
+        </div>
+        {{ data.log_file_details_formset.management_form }}
+    {% endif %}
+{% endblock %}

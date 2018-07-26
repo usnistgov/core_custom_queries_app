@@ -1,0 +1,40 @@
+{% extends 'core_main_app/_render/admin/theme/tools/modal.html' %}
+
+{% block modal_id %}detail_{{form_detail.id.value}}{% endblock %}
+{% block modal_title %}Log File Details{% endblock %}
+
+{% block modal_body %}
+<div class="row">
+    <div class="col-md-3" style="font-size: smaller;">
+        {{ form_detail.application.label_tag }}<br>
+        {{ form_detail.application.value }}
+    </div>
+    <div class="col-md-6" style="font-size: smaller;">
+        {{ form_detail.timestamp.label_tag }}<br>
+        {{ form_detail.timestamp.value|date:"D j M Y, H:i:s" }}
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-3" style="font-size: smaller;">
+        {{ form_detail.code.label_tag }}<br>
+        {% if form_detail.code.value != None%}
+            {{ form_detail.code.value }}
+        {% endif %}
+
+    </div>
+    <div class="col-md-9" style="font-size: smaller;">
+        {{ form_detail.message.label_tag }}<br>
+        {{ form_detail.message.value }}
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12" style="font-size: smaller;">
+        {{ form_detail.additional.label_tag }}<br>
+        {{ form_detail.additional }}
+    </div>
+</div>
+{% endblock %}
+
+{% block modal_footer %}
+<a class="btn btn-default" data-dismiss="modal" href="#">Ok</a>
+{% endblock %}

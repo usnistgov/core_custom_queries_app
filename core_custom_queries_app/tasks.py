@@ -8,6 +8,8 @@ from celery.task import periodic_task
 from redis import Redis, ConnectionError
 
 from core_custom_queries_app.components.history_query import api as history_query_api
+from core_custom_queries_app.components.log_file import api as log_file_api
+from core_custom_queries_app.components.log_file.models import LogFile
 from core_custom_queries_app.components.query_to_treat import api as query_to_treat_api
 from core_custom_queries_app.components.temp_bucket_id_files import api as temp_bucket_id_files_api
 from core_custom_queries_app.components.temp_bucket_output_file import api as temp_bucket_output_file_api
@@ -138,8 +140,11 @@ def get_files_to_create():
                 run_worker(redis_server)
             Redis.set(redis_server, 'is_working', False)
     except ConnectionError, e:
-        # FIXME: add logs
-        pass
+        log_file = LogFile(application="Custom Queries",
+                           message="Redis not reachable, is it running?",
+                           additionalInformation={'message': e.message},
+                           timestamp=datetime.now())
+        log_file_api.upsert(log_file)
 
 
 def run_worker(redis_server):
@@ -161,5 +166,8 @@ def run_worker(redis_server):
                 pass
             redis_server.set('current_id', "None")
     except ConnectionError, e:
-        # FIXME: add logs
-        pass
+        log_file = LogFile(application="Custom Queries",
+                           message="Redis not reachable, is it running?",
+                           additionalInformation={'message': e.message},
+                           timestamp=datetime.now())
+        log_file_api.upsert(log_file)

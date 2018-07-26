@@ -14,6 +14,8 @@ admin_urls = [
         name='core_custom_queries_app_query_builder'),
     url(r'^custom_queries/(?P<query_id>\w+)/edit$', admin_views.edit_query,
         name='core_custom_queries_app_edit_query'),
+    url(r'^custom_queries/list_errors$', admin_views.list_errors,
+        name='core_custom_queries_app_errors'),
 
     url(r'^custom_queries/delete$', admin_ajax.delete_query,
         name='core_custom_queries_app_delete_query'),

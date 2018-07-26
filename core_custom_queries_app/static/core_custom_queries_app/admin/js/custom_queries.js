@@ -376,21 +376,8 @@ $('#bt_add_sorte').on('click', function() {
 $('.detail_btn').click(function (event) {
     event.preventDefault();
     var id = "detail_" + $(this).val();
-    $(function() {
-        $('#'+id).dialog({
-            height: 325,
-            width : 600,
-            resizable: true,
-            minWidth: 500,
-            minHeight: 325,
-            title: "Log File Detail",
-            buttons: {
-                "Ok": function() {
-                    $(this).dialog('close');
-                }
-            }
-        });
-    });
+    var $details_modal = $("#" + id);
+    $details_modal.modal("show");
 });
 
 $(document).ready(update_field_verification());

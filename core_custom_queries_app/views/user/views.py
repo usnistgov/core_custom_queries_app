@@ -9,11 +9,14 @@ from django.core.urlresolvers import reverse
 from django.forms import formset_factory
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from mongoengine import ValidationError
 from redis import Redis, ConnectionError
 
 import core_main_app.utils.decorators as decorators
 from core_custom_queries_app.components.dyn_query import api as dyn_query_api
 from core_custom_queries_app.components.history_query import api as history_query_api
+from core_custom_queries_app.components.log_file import api as log_file_api
+from core_custom_queries_app.components.log_file.models import LogFile
 from core_custom_queries_app.components.temp_output_file import api as temp_output_file_api
 from core_custom_queries_app.components.temp_user_query import api as temp_user_query_api
 from core_custom_queries_app.components.temp_user_step.models import TempUserStep
@@ -154,8 +157,11 @@ def choose_query(request):
                                 pass
 
                     except ConnectionError, e:
-                        # FIXME: add logs
-                        pass
+                        log_file = LogFile(application="Custom Queries",
+                                           message="Redis not reachable, is it running?",
+                                           additionalInformation={'message': e.message},
+                                           timestamp=datetime.now())
+                        log_file_api.upsert(log_file)
 
                 data['form-' + str(position) + '-query_message'] = h_message
                 data['form-' + str(position) + '-status'] = history_query.status
@@ -335,9 +341,21 @@ def query_steps(request, query_id):
             user_step.transform_choices_files_list_to_dict()
         history_id = user_query.save_to_history(user_id=str(request.user.id), history_id=history_id)
     except Exception, e:
-        # FIXME: add logs
+        # Create the log file from the error
+        log_file = LogFile(application="Custom Queries",
+                           message=e.message,
+                           additionalInformation={'query_name': user_query.query.name,
+                                                  'step_name': user_query.list_steps[user_query.current_position].step.name,
+                                                  'user_choices': user_query.get_previous_choices()},
+                           timestamp=datetime.now())
+        log_file_api.upsert(log_file)
+        try:
+            user_query.update_message("Error during query step.")
+        except ValidationError:
+            pass
+
         messages.add_message(request, messages.ERROR,
-                             "An internal problem occurred, the administrator has been notified." + e.message)
+                             "An internal problem occurred, the administrator has been notified.")
         return redirect(reverse("core_custom_queries_app_index"))
 
     if user_step is None:
@@ -512,9 +530,22 @@ def recover_query_steps(request, history_id):
                 user_step = user_query.handle_history()
                 user_step.transform_choices_files_list_to_dict()
     except Exception, e:
-        # FIXME: add logs
+        # Create the log file from the error
+        log_file = LogFile(application="Custom Queries",
+                           message=e.message,
+                           additionalInformation={'query_name': user_query.query.name,
+                                                  'step_name': user_query.list_steps[
+                                                      user_query.current_position].step.name,
+                                                  'user_choices': user_query.get_previous_choices()},
+                           timestamp=datetime.now())
+        log_file_api.upsert(log_file)
+        try:
+            user_query.update_message("Error during query step.")
+        except ValidationError:
+            pass
+
         messages.add_message(request, messages.ERROR,
-                             "An internal problem occurred, the administrator has been notified." + e.message)
+                             "An internal problem occurred, the administrator has been notified.")
         return redirect(reverse("core_custom_queries_app_index"))
 
     if user_step is None:

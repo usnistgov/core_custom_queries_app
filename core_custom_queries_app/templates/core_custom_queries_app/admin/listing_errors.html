@@ -1,0 +1,12 @@
+{% extends "core_main_app/_render/admin/theme/tools/section.html" %}
+{% load staticfiles %}
+
+{% block section_title %}List of errors{% endblock %}
+
+{% block section_content %}
+<div class="row">
+    <div class="col-md-12">
+        {% include "core_custom_queries_app/admin/log_files/list.html" %}
+    </div>
+</div>
+{% endblock %}

@@ -13,6 +13,7 @@ from redis import Redis, ConnectionError
 
 from core_custom_queries_app.components.data import api as custom_queries_data_api
 from core_custom_queries_app.components.dyn_query.models import DynQuery
+from core_custom_queries_app.components.log_file.models import LogFile
 from core_custom_queries_app.components.temp_bucket_id_files.models import TempBucketIdFiles
 from core_custom_queries_app.components.temp_choice_list_file.models import TempChoiceListFile
 from core_custom_queries_app.components.temp_output_file.models import TempOutputFile
@@ -26,6 +27,7 @@ from core_main_app.commons import exceptions
 from core_main_app.commons.exceptions import DoesNotExist
 from core_main_app.components.template.models import Template
 from core_main_app.permissions.utils import get_formatted_name
+from core_custom_queries_app.components.log_file import api as log_file_api
 
 
 class CustomQueries(models.Model):
@@ -850,7 +852,18 @@ class TempUserQuery(Document):
         try:
             self.init_data_result()
         except Exception, e:
-            # FIXME: add logs
+            current_step = self.get_current_step()
+            log_file = LogFile(application="Custom Queries",
+                               message="The step #"
+                                       + str(current_step.absolute_position)
+                                       + ": " + str(current_step.step.name)
+                                       + " is not a valid timestamp."
+                                       + str(e.message),
+                               additionalInformation={'query_name': self.query_name,
+                                                      'Status': "Result builder"},
+                               timestamp=datetime.now())
+            log_file_api.upsert(log_file)
+            self.update_message("Error during result files creation.")
             return
 
         self.update_message("Result files created.")
@@ -887,4 +900,3 @@ class QueryToTreat(Document):
         Delete function.
         """
         self.delete()
-
