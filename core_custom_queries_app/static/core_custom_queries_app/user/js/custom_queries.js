@@ -50,11 +50,11 @@ var previewFile = function () {
 
   $('#filePreviewCustomQueries').value = content;
   if (csv === true) {
-    content = $('#id_preview_file_csv').val() + '...';
+    content = $('#id_preview_file_csv').val();
   } else if (json === true) {
-    content = $('#id_preview_file_json').val() + '...';
+    content = $('#id_preview_file_json').val();
   } else if (xml === true) {
-    content = $('#id_preview_file_xml').val() + '...';
+    content = $('#id_preview_file_xml').val();
   }
 
   content = content.replace(/(?:\\[rn]|[\r\n]+)+/g, '</p>');
