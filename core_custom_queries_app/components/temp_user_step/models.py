@@ -109,11 +109,12 @@ class TempUserStep(Document):
         """
         dict_choices_file = defaultdict(set)
         for file_xml_data in cursor_xml_data:
+            data_dict = file_xml_data.to_mongo()
             self.get_choices(
-                [file_xml_data.dict_content],
+                [data_dict['dict_content']],
                 [x for x in self.full_xpath.split(".") if x],
                 dict_choices_file,
-                file_xml_data.id
+                data_dict['_id']
             )
         for choices, set_files in dict_choices_file.iteritems():
             self.dict_choices_id_file[choices] = list(set_files)

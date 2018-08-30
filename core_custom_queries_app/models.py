@@ -671,7 +671,7 @@ class TempUserQuery(Document):
             }
         }
 
-        xml_data = [data.dict_content for data in
+        xml_data = [data.to_mongo()['dict_content'] for data in
                     custom_queries_data_api.execute_custom_query(dict_query, full_projection)]
         depth = 0
         list_keys_xpath = []
