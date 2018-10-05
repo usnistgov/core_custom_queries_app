@@ -195,19 +195,21 @@ var clean_formset = function(formset_zone) {
     var formset = $(formset_zone).find('.nsorte');
     var last_id = formset.length - 1;
 
-    var begin_id = 'input[name=form-' + last_id + '-';
+    var begin_id = '[name=form-' + last_id + '-';
+    var input_begin_id = 'input' + begin_id;
+    var select_begin_id = 'select' + begin_id;
 
-    var field_name = $(begin_id + 'name');
-    var field_xpath = $(begin_id + 'xpath');
-    var field_output_field = $(begin_id + 'output_field');
-    var field_target = $(begin_id + 'target');
-    var field_value = $(begin_id + 'value');
-    var field_data_type = $(begin_id + 'data_type');
-    var field_restriction = $(begin_id + 'restriction');
-    var field_data_min_range = $(begin_id + 'data_min_range');
-    var field_data_max_range = $(begin_id + 'data_max_range');
-    var field_data_infinity = $(begin_id + 'data_infinity');
-    var field_date_range = $(begin_id + 'date_range');
+    var field_name = $(input_begin_id + 'name]');
+    var field_xpath = $(input_begin_id + 'xpath]');
+    var field_output_field = $(input_begin_id + 'output_field]');
+    var field_target = $(select_begin_id + 'target]');
+    var field_value = $(input_begin_id + 'value]');
+    var field_data_type = $(select_begin_id + 'data_type]');
+    var field_restriction = $(input_begin_id + 'restriction]');
+    var field_data_min_range = $(input_begin_id + 'data_min_range]');
+    var field_data_max_range = $(input_begin_id + 'data_max_range]');
+    var field_data_infinity = $(input_begin_id + 'data_infinity]');
+    var field_date_range = $(input_begin_id + 'date_range]');
 
 
     field_name.prop('disabled', false);
