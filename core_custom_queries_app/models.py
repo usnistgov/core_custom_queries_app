@@ -11,7 +11,7 @@ from django_mongoengine import fields, Document
 from mongoengine import errors as mongoengine_errors
 from redis import Redis, ConnectionError
 
-from core_custom_queries_app.components.data import api as custom_queries_data_api
+from core_main_app.system import api as system_api
 from core_custom_queries_app.components.dyn_query.models import DynQuery
 from core_custom_queries_app.components.log_file.models import LogFile
 from core_custom_queries_app.components.temp_bucket_id_files.models import TempBucketIdFiles
@@ -24,7 +24,7 @@ from core_custom_queries_app.settings import REDIS_HOST, REDIS_PORT
 from core_custom_queries_app.utils import possible_projection, get_common_key_and_specific_header, get_title_data_leaf, \
     print_bloc, get_header_parents, get_general_key_output_dictionary, flat_list, send_mail_query_end, explore_star
 from core_main_app.commons import exceptions
-from core_main_app.commons.exceptions import DoesNotExist
+from core_main_app.commons.exceptions import DoesNotExist, ModelError
 from core_main_app.components.template.models import Template
 from core_main_app.permissions.utils import get_formatted_name
 from core_custom_queries_app.components.log_file import api as log_file_api
@@ -40,8 +40,7 @@ class CustomQueries(models.Model):
 
 
 class HistoryQuery(Document):
-    """
-    History object to retrieve a query to a specific step
+    """ History object to retrieve a query to a specific step
     """
     user_id = fields.IntField()  # User link to the history
     query_id = fields.StringField()  # Query link to the history
@@ -50,7 +49,7 @@ class HistoryQuery(Document):
 
     @staticmethod
     def get_by_id(history_query_id):
-        """Return a HistoryQuery given its id.
+        """ Return a HistoryQuery given its id.
 
         Args:
             history_query_id:
@@ -87,11 +86,12 @@ class HistoryQuery(Document):
         return HistoryQuery.objects.filter(user_id=str(user_id))
 
     def delete_database(self, from_query_admin=False):
-        """
-        Delete function.
+        """ Delete function.
 
         If the deletion come from the admin panel, Delete all the user query linked to this history.
-        :param from_query_admin: Variable to avoid circle deletion.
+
+        Args:
+            from_query_admin: Variable to avoid circle deletion.
         """
         if not from_query_admin:
             temp_user_queries = TempUserQuery.objects.filter(id=self.query_id)
@@ -101,8 +101,7 @@ class HistoryQuery(Document):
 
 
 class TempUserQuery(Document):
-    """
-    Model which define the query associated to a user choice
+    """ Model which define the query associated to a user choice
     """
     query = fields.ReferenceField(DynQuery, blank=True)
 
@@ -161,12 +160,12 @@ class TempUserQuery(Document):
         return TempUserQuery.objects().all()
 
     def delete_database(self, from_history=False):
-        """
-        Delete function
+        """ Delete function
 
         Delete each steps of the user query and each part of it.
 
-        :param from_history: If deletion coming from the history, variable to avoid circle deletion.
+        Args:
+            from_history: If deletion coming from the history, variable to avoid circle deletion.
         """
         for step in self.list_steps:
             try:
@@ -182,27 +181,27 @@ class TempUserQuery(Document):
 
         # Delete History
         if not from_history:
-            historyQueries = HistoryQuery.objects.filter(query_id=str(self.id))
-            for historyQuery in historyQueries:
-                historyQuery.delete_database(from_query_admin=True)
+            history_queries = HistoryQuery.objects.filter(query_id=str(self.id))
+            for history_query in history_queries:
+                history_query.delete_database(from_query_admin=True)
 
         # Delete output files
         if self.str_id_file_json != "":
             try:
-                tempFile = TempOutputFile.objects.get(id=self.str_id_file_json)
-                tempFile.delete_database()
+                temp_file = TempOutputFile.objects.get(id=self.str_id_file_json)
+                temp_file.delete_database()
             except DoesNotExist:
                 pass
         if self.str_id_file_xml != "":
             try:
-                tempFile = TempOutputFile.objects.get(id=self.str_id_file_xml)
-                tempFile.delete_database()
+                temp_file = TempOutputFile.objects.get(id=self.str_id_file_xml)
+                temp_file.delete_database()
             except DoesNotExist:
                 pass
         if self.str_id_file_csv != "":
             try:
-                tempFile = TempOutputFile.objects.get(id=self.str_id_file_csv)
-                tempFile.delete_database()
+                temp_file = TempOutputFile.objects.get(id=self.str_id_file_csv)
+                temp_file.delete_database()
             except DoesNotExist:
                 pass
 
@@ -220,14 +219,16 @@ class TempUserQuery(Document):
         self.delete()
 
     def initialize_query(self, query_id=None):
-        """
-            Initialise the query used step after step.
+        """ Initialise the query used step after step.
 
-            It initialize a query used step after step. If the query name is given, the information
-             are loaded from the query define by the admin into the query and his own steps.
+        It initialize a query used step after step. If the query name is given, the information
+         are loaded from the query define by the admin into the query and his own steps.
 
-            :param query_id: The query name to load.
-            :return: The object initialized.
+        Args:
+            query_id: The query name to load.
+
+        Returns:
+            The object initialized.
         """
         self.current_position = 0
         self.number_of_step = 0
@@ -242,14 +243,14 @@ class TempUserQuery(Document):
             self.load_from_query_name_admin(query_id)
 
     def load_from_query_name_admin(self, query_id):
-        """
-            Load the query from the admin query.
+        """ Load the query from the admin query.
 
-            The information are loaded from the query define by the admin into the query and his
-             own steps. It is mainly used by the initialize_query method.
+        The information are loaded from the query define by the admin into the query and his
+         own steps. It is mainly used by the initialize_query method.
 
 
-            :param query_id: The query name to load.
+        Args:
+            query_id: The query name to load.
         """
         query = DynQuery.objects.get(pk=query_id)
         self.query = query
@@ -282,13 +283,12 @@ class TempUserQuery(Document):
             self.list_steps.append(new_step)
 
     def save_whole_query(self):
-        """
-            Save the whole query.
+        """ Save the whole query.
 
-            Save the whole query:
-            _save the general information,
-            _save each steps,
-            _save the choices-id_files.
+        Save the whole query:
+        _save the general information,
+        _save each steps,
+        _save the choices-id_files.
         """
 
         for step in self.list_steps:
@@ -312,15 +312,15 @@ class TempUserQuery(Document):
         self.save()
 
     def update_current_position_into_the_db(self):
-        """
-            Update the current position to the object in database.
+        """ Update the current position to the object in database.
         """
         self.update(current_position=self.current_position)
 
     def get_and_load_choices_first_step(self):
-        """
-        Load the first query able step and return it.
-        :return: The first query able step
+        """ Load the first query able step and return it.
+
+        Returns:
+             The first query able step
         """
         first_step = self.get_first_query_able_step()
 
@@ -338,7 +338,7 @@ class TempUserQuery(Document):
             full_projection = possible_projection(full_projection)
             dict_query = {'template': ObjectId(self.query.schema)}
 
-            cursor_xml_data = custom_queries_data_api.execute_custom_query(dict_query, full_projection)
+            cursor_xml_data = system_api.execute_query_with_projection(dict_query, full_projection)
 
             if cursor_xml_data.count() == 0:
                 schema_name = Template.objects.get(pk=self.query.schema).display_name
@@ -353,9 +353,10 @@ class TempUserQuery(Document):
             return first_step
 
     def get_and_load_choices_next_step(self):
-        """
-        Get and load the next query able step.
-        :return: the next query able step
+        """ Get and load the next query able step.
+
+        Returns:
+             the next query able step
         """
         current_step = self.get_current_step()
         next_step = self.get_next_query_able_step()
@@ -381,7 +382,7 @@ class TempUserQuery(Document):
                 "_id": {"$in": unique_ids}
             }
 
-            cursor_xml_data = custom_queries_data_api.execute_custom_query(dict_query, full_projection)
+            cursor_xml_data = system_api.execute_query_with_projection(dict_query, full_projection)
 
             if cursor_xml_data.count() == 0:
                 schema_name = Template.objects.get(id=self.query.schema).display_name
@@ -397,18 +398,18 @@ class TempUserQuery(Document):
         return next_step
 
     def get_current_step(self):
-        """
-            Return the step corresponding to the current position.
+        """ Return the step corresponding to the current position.
 
-            :return: Current step.
+        Returns:
+             Current step.
         """
         return self.list_steps[self.current_position]
 
     def get_first_query_able_step(self):
-        """
-            Return the first query able step. If there is no query able step, it returns None.
+        """ Return the first query able step. If there is no query able step, it returns None.
 
-            :return: Return None if there is no query able step, or the first query able step.
+        Returns:
+            Return None if there is no query able step, or the first query able step.
         """
         self.current_position = 0
         if self.is_query_able(0):
@@ -416,10 +417,10 @@ class TempUserQuery(Document):
         return self.get_next_query_able_step()
 
     def get_last_query_able_step(self):
-        """
-            Return the last query able step. If there is no query able step, it returns None.
+        """ Return the last query able step. If there is no query able step, it returns None.
 
-            :return: Return None if there is no query able step, or the last query able step.
+        Returns:
+             Return None if there is no query able step, or the last query able step.
         """
         for step in reversed(self.list_steps):
             if step.query_able is True:
@@ -427,10 +428,10 @@ class TempUserQuery(Document):
         return None
 
     def get_next_query_able_step(self):
-        """
-            Return the next query able step. If there is no query able step, it returns None.
+        """ Return the next query able step. If there is no query able step, it returns None.
 
-            :return: Return None if there is no next query able step, or the next query able step.
+        Returns:
+             Return None if there is no next query able step, or the next query able step.
         """
         current_viewable_position = self.list_steps[self.current_position].viewable_position
         if current_viewable_position == self.number_of_query_able_step:
@@ -444,11 +445,10 @@ class TempUserQuery(Document):
             return self.list_steps[self.current_position]
 
     def get_previous_query_able_step(self):
-        """
-            Return the previous query able step. If there is no query able step, it returns None.
+        """ Return the previous query able step. If there is no query able step, it returns None.
 
-            :return: Return None if there is no previous query able step, or the previous query able
-             step.
+        Returns:
+             Return None if there is no previous query able step, or the previous query able step.
         """
         current_viewable_position = self.list_steps[self.current_position].viewable_position
         if current_viewable_position == 1:
@@ -466,12 +466,12 @@ class TempUserQuery(Document):
             return self.list_steps[self.current_position]
 
     def get_previous_choices(self):
-        """
-            Get the formatted the previous user choices.
+        """ Get the formatted the previous user choices.
 
-            Return the previous user choices separated by "/".
+        Return the previous user choices separated by "/".
 
-            :return: Return the formatted the previous user choices separated by "/".
+        Returns:
+             Return the formatted the previous user choices separated by "/".
         """
         prev_choices = list()
         for position in range(0, self.current_position + 1):
@@ -480,15 +480,15 @@ class TempUserQuery(Document):
         return " / ".join(prev_choices)
 
     def get_ids_files_last_step(self):
-        """
-            Get the minimal list of files where data can be picked in. If there is no query able
-            step, ie no choices, all the files linked to the query's schema will be returned.
+        """ Get the minimal list of files where data can be picked in. If there is no query able step, ie no choices,
+        all the files linked to the query's schema will be returned.
 
-            :return: Minimal list of files from the database linked to the user choices.
+        Returns:
+             Minimal list of files from the database linked to the user choices.
         """
         last_query_able_step = self.get_last_query_able_step()
         if last_query_able_step is None:
-            xml_data_list = custom_queries_data_api.get_all_by_template(ObjectId(self.query.schema))
+            xml_data_list = system_api.get_all_by_template(ObjectId(self.query.schema))
             list_ids = list()
             for xml_data in xml_data_list:
                 list_ids.append(xml_data.id)
@@ -506,16 +506,17 @@ class TempUserQuery(Document):
         return [ObjectId(x) for x in list(set(id_current_files))]
 
     def is_query_able(self, position=None):
-        """
-            Return if a step is query able.
+        """ Return if a step is query able.
 
-            It returns True if the step is query able, False if the step is not query able. The
-            tested step is the first one if the position is not given,
-            or the step corresponding to the given position.
+        It returns True if the step is query able, False if the step is not query able. The
+        tested step is the first one if the position is not given,
+        or the step corresponding to the given position.
 
-            :param position: The position's step designing the tested step.
+        Args:
+            position: The position's step designing the tested step.
 
-            :return: Return True if the step is query able, False if the step is not query able.
+        Returns:
+            Return True if the step is query able, False if the step is not query able.
         """
         if position is None:
             return self.list_steps[self.current_position].query_able
@@ -523,27 +524,29 @@ class TempUserQuery(Document):
             return self.list_steps[position].query_able
 
     def is_current_first_step(self):
-        """
-            Return if the current step is the first step.
+        """ Return if the current step is the first step.
 
-            It returns True if the step is the first step, False if the step is not the first one.
+        It returns True if the step is the first step, False if the step is not the first one.
 
-            :return: Return True if the step is query able, False if the step is not query able.
+        Returns:
+            Return True if the step is query able, False if the step is not query able.
         """
         return self.get_current_step().viewable_position == 1
 
     def update_time(self):
-        """
-        Update the query name.
+        """ Update the query name.
         """
         self.update(last_modified=datetime.now())
 
     def save_to_history(self, user_id, history_id=None):
-        """
-        Create or update the history query.
-        :param user_id: User id.
-        :param history_id: History query associated. If none, the history has to be created.
-        :return: History id.
+        """ Create or update the history query.
+
+        Args:
+            user_id: User id.
+            history_id: History query associated. If none, the history has to be created.
+
+        Returns:
+            History id.
         """
         if history_id is None:
             history = HistoryQuery()
@@ -566,38 +569,43 @@ class TempUserQuery(Document):
         return history.id
 
     def update_message(self, _message):
-        """
-        Update History message
-        :param _message: Message to be updated
+        """ Update History message
+
+        Args:
+            _message: Message to be updated
         """
         TempUserQuery.objects.get(id=self.id).history.update(message=_message)
 
     def handle_history(self):
-        """
-        Get previous choice and return step
+        """ Get previous choice and return step
         """
         choices = self.get_previous_choices()
+
         if choices[:-1] is not []:
             step = self.get_current_step()
             step.choices = []
             step.update(choices=[])
+        else:
+            raise ModelError("Previous choice does not exist")
+
         return step
 
     def create_files(self, dict_data, map_keys, list_headers, list_file_xml, list_file_json,
                      list_file_csv, depth, max_depth):
-        """
-        Create the output file
-        :param number_records: Number of records to limit the query
-        :param is_limited: Is query limited to number_records
-        :param dict_data: Tree of data.
-        :param map_keys: Map a hash key to a key. The key is a dictionary representing a node.
-        :param list_headers: List of headers parts common to all current element.
-        :param list_file_xml: Different part of xml file.
-        :param list_file_json: Different part of json file.
-        :param list_file_csv: Different part of csv file.
-        :param depth: Current depth in the tree.
-        :param max_depth: Maximum depth in the tree.
-        :return: Output files.
+        """ Create the output file
+
+        Args:
+            dict_data: Tree of data.
+            map_keys: Map a hash key to a key. The key is a dictionary representing a node.
+            list_headers: List of headers parts common to all current element.
+            list_file_xml: Different part of xml file.
+            list_file_json: Different part of json file.
+            list_file_csv: Different part of csv file.
+            depth: Current depth in the tree.
+            max_depth: Maximum depth in the tree.
+
+        Returns:
+            Output files.
         """
 
         if depth == max_depth:  # Leaf level
@@ -651,8 +659,7 @@ class TempUserQuery(Document):
         return
 
     def init_data_result(self):
-        """
-        Initialize the variables to create the files. Create the files and save them into the database.
+        """ Initialize the variables to create the files. Create the files and save them into the database.
         """
         translate_dt = maketrans("-:.T", '    ')  # Translate object for element date time
         translate_bounds = maketrans("-:", '  ')  # Translate object for bounds date time
@@ -671,8 +678,11 @@ class TempUserQuery(Document):
             }
         }
 
-        xml_data = [data.to_mongo()['dict_content'] for data in
-                    custom_queries_data_api.execute_custom_query(dict_query, full_projection)]
+        xml_data = [
+            data.to_mongo()['dict_content']
+            for data in system_api.execute_query_with_projection(dict_query, full_projection)
+        ]
+
         depth = 0
         list_keys_xpath = []
         dict_data = dict()
@@ -717,18 +727,19 @@ class TempUserQuery(Document):
 
     def explore_elements(self, list_elements, list_keys_xpath, depth, max_depth, dict_to_add,
                          translate_dt, translate_bounds, map_key, list_nb_file_treated, nb_file_total):
-        """
-        Explore the elements and filter them from an input file.
-        :param list_elements: List of current element.
-        :param list_keys_xpath: List of sliced xpath.
-        :param depth: Current depth in the element.
-        :param max_depth: Maximum element depth.
-        :param dict_to_add: Result dictionary.
-        :param translate_dt: Translate python object for element date.
-        :param translate_bounds: Translate python object for bounds date.
-        :param map_key: Map between hash and dictionary.
-        :param list_nb_file_treated: List used for the advancement percentage. Only the first element is used.
-        :param nb_file_total:  Number of total files.
+        """ Explore the elements and filter them from an input file.
+
+        Args:
+            list_elements: List of current element.
+            list_keys_xpath: List of sliced xpath.
+            depth: Current depth in the element.
+            max_depth: Maximum element depth.
+            dict_to_add: Result dictionary.
+            translate_dt: Translate python object for element date.
+            translate_bounds: Translate python object for bounds date.
+            map_key: Map between hash and dictionary.
+            list_nb_file_treated: List used for the advancement percentage. Only the first element is used.
+            nb_file_total:  Number of total files.
         """
         if depth == 1:
             self.update_message(
@@ -808,15 +819,18 @@ class TempUserQuery(Document):
         return
 
     def apply_user_choices(self, list_elements, depth, max_depth, element_title, translate_dt, translate_bounds):
-        """
-        Apply user choices to a list of elements.
-        :param list_elements: List of elements to be filtered.
-        :param depth: Current depth.
-        :param max_depth: Maximum Depth.
-        :param element_title: Current element title
-        :param translate_dt: Translate python object for the element date time.
-        :param translate_bounds: Translate python object for the bounds.
-        :return: depthm list cleaned elements
+        """ Apply user choices to a list of elements.
+
+        Args:
+            list_elements: List of elements to be filtered.
+            depth: Current depth.
+            max_depth: Maximum Depth.
+            element_title: Current element title
+            translate_dt: Translate python object for the element date time.
+            translate_bounds: Translate python object for the bounds.
+
+        Returns:
+            depthm list cleaned elements
         """
         current_step = self.list_steps[depth]
         list_cleaned_elements = current_step.choose_filter_choice(
@@ -838,16 +852,14 @@ class TempUserQuery(Document):
         return depth, list_cleaned_elements
 
     def add_query_to_waiting_line(self):
-        """
-        Add query to the waiting line when the user end his choices.
+        """ Add query to the waiting line when the user end his choices.
         """
         query_to_treat = QueryToTreat()
         query_to_treat.query = self
         query_to_treat.save()
 
     def create_outputs_file(self):
-        """
-        Create the output files
+        """ Create the output files
         """
         try:
             self.init_data_result()
@@ -881,14 +893,13 @@ class TempUserQuery(Document):
 
 
 class QueryToTreat(Document):
-    """
-    List of query waiting to be treated.
+    """ List of query waiting to be treated.
     """
     query = fields.ReferenceField(TempUserQuery, blank=True)
 
     @staticmethod
     def get_all():
-        """Return all QueryToTreat.
+        """ Return all QueryToTreat.
 
         Returns:
 
@@ -896,7 +907,6 @@ class QueryToTreat(Document):
         return QueryToTreat.objects().all()
 
     def delete_database(self):
-        """
-        Delete function.
+        """ Delete function.
         """
         self.delete()
