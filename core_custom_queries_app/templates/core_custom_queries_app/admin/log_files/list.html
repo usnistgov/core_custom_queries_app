@@ -7,7 +7,7 @@
     {% if data.number_log_files > 0 %}
         <button class="btn btn-default" onclick="select_all_log_files();" >
             <i class="fa fa-check-square-o" aria-hidden="true" title="Align Left"></i>
-                Select all
+            Toggle all
         </button>
 
         <form id="form_log_files" action="#" enctype="multipart/form-data" method="post">
@@ -17,20 +17,22 @@
             <table id="formset" class="table table-hover container-fluid">
                 {% for form in data.formset.forms %}
                     {% if forloop.first %}
-                        <thead><tr>
-                            {% for field in form.visible_fields %}
-                                {% if field.label|capfirst == "Application" %}
-                                    <th class="text-center col-xs-2">{{ field.label|capfirst }}</th>
-                                {% elif field.label|capfirst == "Timestamp" %}
-                                    <th class="text-center col-xs-3">{{ field.label|capfirst }}</th>
-                                {% elif field.label|capfirst == "Error message" %}
-                                    <th class="text-center col-xs-5">{{ field.label|capfirst }}</th>
-                                {% elif field.label|capfirst == "Delete" %}
-                                    <th class="text-center col-xs-1">{{ field.label|capfirst }}</th>
-                                {% endif %}
-                            {% endfor %}
-                            <th class="text-center col-xs-2"></th></thead>
-                        </tr>
+                        <thead>
+                            <tr>
+                                {% for field in form.visible_fields %}
+                                    {% if field.label|capfirst == "Application" %}
+                                        <th class="text-center col-xs-2">{{ field.label|capfirst }}</th>
+                                    {% elif field.label|capfirst == "Timestamp" %}
+                                        <th class="text-center col-xs-3">{{ field.label|capfirst }}</th>
+                                    {% elif field.label|capfirst == "Error message" %}
+                                        <th class="text-center col-xs-5">{{ field.label|capfirst }}</th>
+                                    {% elif field.label|capfirst == "Delete" %}
+                                        <th class="text-center col-xs-1">{{ field.label|capfirst }}</th>
+                                    {% endif %}
+                                {% endfor %}
+                                <th class="text-center col-xs-2"></th>
+                            </tr>
+                        </thead>
                     {% endif %}
                     <tr>
                     {% for field in form.visible_fields %}
