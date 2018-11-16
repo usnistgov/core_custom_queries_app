@@ -11,8 +11,8 @@ from django_mongoengine import fields, Document
 from mongoengine import errors as mongoengine_errors
 from redis import Redis, ConnectionError
 
-from core_main_app.system import api as system_api
 from core_custom_queries_app.components.dyn_query.models import DynQuery
+from core_custom_queries_app.components.log_file import api as log_file_api
 from core_custom_queries_app.components.log_file.models import LogFile
 from core_custom_queries_app.components.temp_bucket_id_files.models import TempBucketIdFiles
 from core_custom_queries_app.components.temp_choice_list_file.models import TempChoiceListFile
@@ -20,14 +20,14 @@ from core_custom_queries_app.components.temp_output_file.models import TempOutpu
 from core_custom_queries_app.components.temp_user_step.models import TempUserStep
 from core_custom_queries_app.exceptions import EmptyChoicesFromQuery
 from core_custom_queries_app.permissions import rights
-from core_custom_queries_app.settings import REDIS_HOST, REDIS_PORT
 from core_custom_queries_app.utils import possible_projection, get_common_key_and_specific_header, get_title_data_leaf, \
     print_bloc, get_header_parents, get_general_key_output_dictionary, flat_list, send_mail_query_end, explore_star
 from core_main_app.commons import exceptions
 from core_main_app.commons.exceptions import DoesNotExist, ModelError
 from core_main_app.components.template.models import Template
 from core_main_app.permissions.utils import get_formatted_name
-from core_custom_queries_app.components.log_file import api as log_file_api
+from core_main_app.system import api as system_api
+from qdr.settings import REDIS_URL
 
 
 class CustomQueries(models.Model):
@@ -207,7 +207,7 @@ class TempUserQuery(Document):
 
         # DeleteInfoRedis
         try:
-            redis_server = Redis(host=REDIS_HOST, port=REDIS_PORT)
+            redis_server = Redis.from_url(REDIS_URL)
             if redis_server.exists("list_ids"):
                 try:
                     redis_server.lrem("list_ids", str(self.id), 0)

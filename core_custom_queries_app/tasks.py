@@ -17,9 +17,9 @@ from core_custom_queries_app.components.temp_choice_list_file import api as temp
 from core_custom_queries_app.components.temp_output_file import api as temp_output_file_api
 from core_custom_queries_app.components.temp_user_query import api as temp_user_query_api
 from core_custom_queries_app.components.temp_user_step import api as temp_user_step_api
-from core_custom_queries_app.settings import REDIS_HOST, REDIS_PORT
 from core_custom_queries_app.utils import flat_list
 from core_main_app.commons.exceptions import DoesNotExist
+from qdr.settings import REDIS_URL
 
 
 @periodic_task(run_every=crontab(minute=0, hour=0))
@@ -122,7 +122,7 @@ def get_files_to_create():
     Get the queries from the database and put them into the waiting list.
     If a the waiting list is empty or the worker is already run, do nothing, else, launch the worker.
     """
-    redis_server = Redis(host=REDIS_HOST, port=REDIS_PORT)
+    redis_server = Redis.from_url(REDIS_URL)
 
     queries_to_treat = query_to_treat_api.get_all()
 

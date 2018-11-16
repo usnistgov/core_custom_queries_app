@@ -22,13 +22,13 @@ from core_custom_queries_app.components.temp_user_query import api as temp_user_
 from core_custom_queries_app.components.temp_user_step.models import TempUserStep
 from core_custom_queries_app.models import TempUserQuery
 from core_custom_queries_app.permissions import rights
-from core_custom_queries_app.settings import REDIS_HOST, REDIS_PORT
 from core_custom_queries_app.views.user.forms import FormChooseQuery, FormRadio, FormCheck, FormDateTime, FormResult, \
     FormHistory
 from core_main_app.commons.exceptions import DoesNotExist
 from core_main_app.components.template_version_manager import api as template_version_manager_api
 from core_main_app.utils.file import get_file_http_response
 from core_main_app.utils.rendering import render
+from qdr.settings import REDIS_URL
 
 
 @decorators.permission_required(content_type=rights.custom_queries_content_type,
@@ -141,7 +141,7 @@ def choose_query(request):
 
                 h_message = history_query.message
                 if h_message == "Pending.":
-                    redis_server = Redis(host=REDIS_HOST, port=REDIS_PORT)
+                    redis_server = Redis.from_url(REDIS_URL)
                     try:
                         if redis_server.exists("current_id"):
                             current_id = redis_server.get("current_id")
