@@ -665,6 +665,8 @@ def output_files(request, history_id):
             query_name = user_query.query.name
             preview_json = temp_output_file_api.load_file(id_file_json)[:2000]
             preview_csv = temp_output_file_api.load_file(id_file_csv)[:2000]
+            if len(preview_csv) == 0:
+                preview_csv = 'The file is empty.'
             preview_xml = temp_output_file_api.load_file(id_file_xml)[:2000]
             form = FormResult(
                 queryName=query_name,
