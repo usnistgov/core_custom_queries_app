@@ -32,7 +32,7 @@ chdir(normpath(join(abspath(__file__), pardir)))
 
 setup(
     name="core_custom_queries_app",
-    version="1.0.0",
+    version="1.1.0.dev1",
     description="Custom queries app",
     long_description=long_desc,
     author="NIST IT Lab",
