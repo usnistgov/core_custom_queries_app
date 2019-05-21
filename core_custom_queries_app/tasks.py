@@ -139,7 +139,7 @@ def get_files_to_create():
             if Redis.exists(redis_server, 'list_ids'):
                 run_worker(redis_server)
             Redis.set(redis_server, 'is_working', False)
-    except ConnectionError, e:
+    except ConnectionError as e:
         log_file = LogFile(application="Custom Queries",
                            message="Redis not reachable, is it running?",
                            additionalInformation={'message': e.message},
@@ -165,7 +165,7 @@ def run_worker(redis_server):
             except DoesNotExist:
                 pass
             redis_server.set('current_id', "None")
-    except ConnectionError, e:
+    except ConnectionError as e:
         log_file = LogFile(application="Custom Queries",
                            message="Redis not reachable, is it running?",
                            additionalInformation={'message': e.message},

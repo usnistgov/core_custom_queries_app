@@ -156,7 +156,7 @@ def choose_query(request):
                             except ValueError:
                                 pass
 
-                    except ConnectionError, e:
+                    except ConnectionError as e:
                         log_file = LogFile(application="Custom Queries",
                                            message="Redis not reachable, is it running?",
                                            additionalInformation={'message': e.message},
@@ -306,7 +306,7 @@ def query_steps(request, query_id):
                                                      'The maximum time range you can query in is '
                                                      + str(date_range)
                                                      + ' day(s).')
-                    except Exception, e:
+                    except Exception as e:
                         error = True
                         messages.add_message(request, messages.ERROR, e)
                 if not error:
@@ -340,7 +340,7 @@ def query_steps(request, query_id):
             # Error validation
             user_step.transform_choices_files_list_to_dict()
         history_id = user_query.save_to_history(user_id=str(request.user.id), history_id=history_id)
-    except Exception, e:
+    except Exception as e:
         # Create the log file from the error
         log_file = LogFile(application="Custom Queries",
                            message=e.message,
@@ -488,7 +488,7 @@ def recover_query_steps(request, history_id):
                                                      'The maximum time range you can query in is '
                                                      + str(date_range)
                                                      + ' day(s).')
-                    except Exception, e:
+                    except Exception as e:
                         error = True
                         messages.add_message(request, messages.ERROR, e)
                 if not error:
@@ -529,7 +529,7 @@ def recover_query_steps(request, history_id):
                 # Load the history query
                 user_step = user_query.handle_history()
                 user_step.transform_choices_files_list_to_dict()
-    except Exception, e:
+    except Exception as e:
         # Create the log file from the error
         log_file = LogFile(application="Custom Queries",
                            message=e.message,
@@ -698,7 +698,7 @@ def output_files(request, history_id):
                                  "An internal problem occurred during the output file creation. "
                                  "The administrator has been noticed.")
             return redirect(reverse("core_custom_queries_app_index"))
-    except Exception, e:
+    except Exception as e:
         messages.add_message(request, messages.ERROR,
                              e.message)
         return redirect(reverse("core_custom_queries_app_index"))

@@ -46,7 +46,7 @@ def queries_list(request):
             query_dict['schema'] = template_version_manager.title
             if template_version_manager.is_disabled:
                 query_dict['schema'] += '-deleted'
-        except Exception, e:
+        except Exception as e:
             query_dict['schema'] = 'Template deleted from the database.'
 
         query_dict['group'] = query.group
@@ -108,7 +108,7 @@ def query_builder(request):
                         list_query_steps.append(step)
                         try:
                             dyn_query_step_api.upsert(step)
-                        except Exception, e:
+                        except Exception as e:
                             for step in query.steps:
                                 dyn_query_step_api.delete(step)
                             messages.add_message(request, messages.ERROR, e.message)
@@ -118,7 +118,7 @@ def query_builder(request):
                     query["steps"] = list_query_steps
                     try:
                         dyn_query_api.upsert(query)
-                    except Exception, e:
+                    except Exception as e:
                         for step in query.steps:
                             dyn_query_step_api.delete(step)
                         messages.add_message(request, messages.ERROR, e.message)
@@ -190,7 +190,7 @@ def edit_query(request, query_id):
                     messages.add_message(request, messages.INFO,
                                          'The query you are trying to manage does not exist anymore.')
                     return redirect(reverse("admin:core_custom_queries_app_queries"))
-                except ModelError, e:
+                except ModelError as e:
                     messages.add_message(request, messages.WARNING, e.message)
                     return redirect(reverse("admin:core_custom_queries_app_queries"))
 
@@ -208,7 +208,7 @@ def edit_query(request, query_id):
                     except DoesNotExist:
                         messages.add_message(request, messages.INFO,
                                              'The query you are trying to manage does not exist anymore.')
-                    except ModelError, e:
+                    except ModelError as e:
                         messages.add_message(request, messages.WARNING, e.message)
 
                     step.name=step_data.get("name")
@@ -234,7 +234,7 @@ def edit_query(request, query_id):
         except DoesNotExist:
             messages.add_message(request, messages.INFO, "The matching query does not exist.")
             return redirect(reverse("admin:core_custom_queries_app_queries"))
-        except ModelError, e:
+        except ModelError as e:
             messages.add_message(request, messages.WARNING, e.message)
             return redirect(reverse("admin:core_custom_queries_app_queries"))
 

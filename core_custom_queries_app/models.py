@@ -863,7 +863,7 @@ class TempUserQuery(Document):
         """
         try:
             self.init_data_result()
-        except Exception, e:
+        except Exception as e:
             current_step = self.get_current_step()
             log_file = LogFile(application="Custom Queries",
                                message="The step #"

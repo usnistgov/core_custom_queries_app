@@ -24,5 +24,5 @@ def delete_query(request):
         messages.add_message(request, messages.SUCCESS, 'Query deleted.')
         return HttpResponse(reverse("admin:core_custom_queries_app_queries"))
 
-    except Exception, e:
+    except Exception as e:
         return HttpResponseBadRequest(e.message, content_type='application/javascript')
