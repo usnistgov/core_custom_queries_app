@@ -1,5 +1,7 @@
 """ LogFile Model
 """
+from builtins import str
+
 from django_mongoengine import fields, Document
 from mongoengine import errors as mongoengine_errors
 
@@ -29,9 +31,9 @@ class LogFile(Document):
         try:
             return LogFile.objects.get(pk=str(log_file_id))
         except mongoengine_errors.DoesNotExist as e:
-            raise exceptions.DoesNotExist(e.message)
+            raise exceptions.DoesNotExist(str(e))
         except Exception as ex:
-            raise exceptions.ModelError(ex.message)
+            raise exceptions.ModelError(str(ex))
 
     @staticmethod
     def get_all():

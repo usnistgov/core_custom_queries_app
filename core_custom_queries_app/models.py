@@ -1,6 +1,11 @@
 """ Custom Queries models
 """
+from __future__ import division
+
+from builtins import object
+from builtins import range
 # FIXME: these models cannot be split into components for now because of circular dependencies
+from builtins import str
 from datetime import datetime
 from string import maketrans
 
@@ -9,6 +14,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django_mongoengine import fields, Document
 from mongoengine import errors as mongoengine_errors
+from past.utils import old_div
 from redis import Redis, ConnectionError
 
 from core_custom_queries_app.components.dyn_query.models import DynQuery
@@ -31,7 +37,7 @@ from qdr.settings import REDIS_URL
 
 
 class CustomQueries(models.Model):
-    class Meta:
+    class Meta(object):
         verbose_name = 'core_custom_queries_app'
         default_permissions = ()
         permissions = (
@@ -60,9 +66,9 @@ class HistoryQuery(Document):
         try:
             return HistoryQuery.objects.get(pk=str(history_query_id))
         except mongoengine_errors.DoesNotExist as e:
-            raise exceptions.DoesNotExist(e.message)
+            raise exceptions.DoesNotExist(str(e))
         except Exception as ex:
-            raise exceptions.ModelError(ex.message)
+            raise exceptions.ModelError(str(ex))
 
     @staticmethod
     def get_all():
@@ -129,9 +135,9 @@ class TempUserQuery(Document):
         try:
             return TempUserQuery.objects.get(pk=str(temp_user_query_id))
         except mongoengine_errors.DoesNotExist as e:
-            raise exceptions.DoesNotExist(e.message)
+            raise exceptions.DoesNotExist(str(e))
         except Exception as ex:
-            raise exceptions.ModelError(ex.message)
+            raise exceptions.ModelError(str(ex))
 
     @staticmethod
     def get_by_history_id(history_id):
@@ -146,9 +152,9 @@ class TempUserQuery(Document):
         try:
             return TempUserQuery.objects.get(history=str(history_id))
         except mongoengine_errors.DoesNotExist as e:
-            raise exceptions.DoesNotExist(e.message)
+            raise exceptions.DoesNotExist(str(e))
         except Exception as ex:
-            raise exceptions.ModelError(ex.message)
+            raise exceptions.ModelError(str(ex))
 
     @staticmethod
     def get_all():
@@ -292,10 +298,10 @@ class TempUserQuery(Document):
         """
 
         for step in self.list_steps:
-            for choice, list_files in step.dict_choices_id_file.iteritems():
+            for choice, list_files in list(step.dict_choices_id_file.items()):
                 new_temp_choice_list_file = TempChoiceListFile()
 
-                chunks = [list_files[x:x + 300] for x in xrange(0, len(list_files), 300)]
+                chunks = [list_files[x:x + 300] for x in range(0, len(list_files), 300)]
                 list_bucket_temp = list()
                 for chunk in chunks:
                     new_bucket = TempBucketIdFiles()
@@ -610,16 +616,16 @@ class TempUserQuery(Document):
 
         if depth == max_depth:  # Leaf level
             if dict_data:
-                list_keys = dict_data.keys()
+                list_keys = list(dict_data.keys())
 
                 # Sort data if possible
                 is_timestamp_present = True
                 for hash_data in list_keys:
-                    if "@timestamp" not in map_keys[hash_data].keys():
+                    if "@timestamp" not in list(map_keys[hash_data].keys()):
                         is_timestamp_present = False
                         break
                 if is_timestamp_present:
-                    list_keys = sorted(dict_data.keys(),
+                    list_keys = sorted(list(dict_data.keys()),
                                        key=lambda x: map_keys[x]['@timestamp'])
 
                 # Keeping only the 10 000 last records
@@ -643,7 +649,7 @@ class TempUserQuery(Document):
 
             return
         else:  # Header level
-            for key_hash, value in dict_data.iteritems():
+            for key_hash, value in list(dict_data.items()):
                 dict_key = map_keys[key_hash]
                 list_header_actual_key = get_header_parents(dict_key)
                 self.create_files(
@@ -744,7 +750,7 @@ class TempUserQuery(Document):
         if depth == 1:
             self.update_message(
                 "Gathering all data. - "
-                + str("%.2f" % ((list_nb_file_treated[0] / nb_file_total) * 100))
+                + str("%.2f" % ((old_div(list_nb_file_treated[0], nb_file_total)) * 100))
                 + " %"
             )
             list_nb_file_treated[0] += 1
@@ -798,7 +804,7 @@ class TempUserQuery(Document):
         for element in list_elements_cleaned:
             dict_key_output_master = get_general_key_output_dictionary(
                 element, element_title)
-            str_key_output_spec = dict_to_str(frozenset(dict_key_output_master.items()))
+            str_key_output_spec = dict_to_str(frozenset(list(dict_key_output_master.items())))
 
             if str_key_output_spec not in dict_to_add:
                 map_key[str_key_output_spec] = dict_key_output_master
@@ -870,7 +876,7 @@ class TempUserQuery(Document):
                                        + str(current_step.absolute_position)
                                        + ": " + str(current_step.step.name)
                                        + " is not a valid timestamp."
-                                       + str(e.message),
+                                       + str(e),
                                additionalInformation={'query_name': self.query_name,
                                                       'Status': "Result builder"},
                                timestamp=datetime.now())

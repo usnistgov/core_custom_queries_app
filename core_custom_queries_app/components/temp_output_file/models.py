@@ -1,5 +1,8 @@
 """ TempBucketOutputFiles model
 """
+from builtins import range
+from builtins import str
+
 from django_mongoengine import Document, fields
 from mongoengine import errors as mongoengine_errors
 
@@ -28,9 +31,9 @@ class TempOutputFile(Document):
         try:
             return TempOutputFile.objects.get(pk=str(temp_output_file_id))
         except mongoengine_errors.DoesNotExist as e:
-            raise exceptions.DoesNotExist(e.message)
+            raise exceptions.DoesNotExist(str(e))
         except Exception as ex:
-            raise exceptions.ModelError(ex.message)
+            raise exceptions.ModelError(str(ex))
 
     @staticmethod
     def get_all():
@@ -61,7 +64,7 @@ class TempOutputFile(Document):
         """
 
         # Cut the file
-        chunks_file = [str_file[x:x + 11000000] for x in xrange(0, len(str_file), 11000000)]
+        chunks_file = [str_file[x:x + 11000000] for x in range(0, len(str_file), 11000000)]
         self.data_type = type_file
         list_chunks = list()
         # Save each part of the file

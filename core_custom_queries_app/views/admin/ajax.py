@@ -25,4 +25,4 @@ def delete_query(request):
         return HttpResponse(reverse("admin:core_custom_queries_app_queries"))
 
     except Exception as e:
-        return HttpResponseBadRequest(e.message, content_type='application/javascript')
+        return HttpResponseBadRequest(str(e), content_type='application/javascript')

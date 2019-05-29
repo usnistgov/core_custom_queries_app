@@ -1,5 +1,7 @@
 """ Dyn Query Step Model
 """
+from builtins import str
+
 from django_mongoengine import fields, Document
 from mongoengine import errors as mongoengine_errors
 
@@ -46,6 +48,6 @@ class DynQueryStep(Document):
         try:
             return DynQueryStep.objects.get(pk=str(dyn_query_step_id))
         except mongoengine_errors.DoesNotExist as e:
-            raise exceptions.DoesNotExist(e.message)
+            raise exceptions.DoesNotExist(str(e))
         except Exception as ex:
-            raise exceptions.ModelError(ex.message)
+            raise exceptions.ModelError(str(ex))

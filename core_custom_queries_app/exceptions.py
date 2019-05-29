@@ -1,5 +1,6 @@
 """ Custom queries exceptions
 """
+from builtins import str
 
 
 class EmptyChoicesFromQuery(Exception):

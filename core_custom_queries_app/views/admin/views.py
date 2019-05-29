@@ -1,6 +1,8 @@
 """
 Describe all the view admin-only
 """
+from builtins import str
+
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.forms import formset_factory
@@ -111,7 +113,7 @@ def query_builder(request):
                         except Exception as e:
                             for step in query.steps:
                                 dyn_query_step_api.delete(step)
-                            messages.add_message(request, messages.ERROR, e.message)
+                            messages.add_message(request, messages.ERROR, str(e))
                             break
 
                     # Add the steps to the query
@@ -121,13 +123,13 @@ def query_builder(request):
                     except Exception as e:
                         for step in query.steps:
                             dyn_query_step_api.delete(step)
-                        messages.add_message(request, messages.ERROR, e.message)
+                        messages.add_message(request, messages.ERROR, str(e))
 
                     messages.add_message(request, messages.SUCCESS, 'Query saved.')
                     return redirect(reverse("admin:core_custom_queries_app_queries"))
 
                 except Exception as e:
-                    messages.add_message(request, messages.ERROR, e.message)
+                    messages.add_message(request, messages.ERROR, str(e))
     else:
         # Create an empty form to create a query
         form = Query()
@@ -191,7 +193,7 @@ def edit_query(request, query_id):
                                          'The query you are trying to manage does not exist anymore.')
                     return redirect(reverse("admin:core_custom_queries_app_queries"))
                 except ModelError as e:
-                    messages.add_message(request, messages.WARNING, e.message)
+                    messages.add_message(request, messages.WARNING, str(e))
                     return redirect(reverse("admin:core_custom_queries_app_queries"))
 
                 query.name = form_data["name"]
@@ -209,7 +211,7 @@ def edit_query(request, query_id):
                         messages.add_message(request, messages.INFO,
                                              'The query you are trying to manage does not exist anymore.')
                     except ModelError as e:
-                        messages.add_message(request, messages.WARNING, e.message)
+                        messages.add_message(request, messages.WARNING, str(e))
 
                     step.name=step_data.get("name")
                     step.xpath=step_data.get("xpath")
@@ -235,7 +237,7 @@ def edit_query(request, query_id):
             messages.add_message(request, messages.INFO, "The matching query does not exist.")
             return redirect(reverse("admin:core_custom_queries_app_queries"))
         except ModelError as e:
-            messages.add_message(request, messages.WARNING, e.message)
+            messages.add_message(request, messages.WARNING, str(e))
             return redirect(reverse("admin:core_custom_queries_app_queries"))
 
         nb_steps = len(query.steps)
@@ -359,7 +361,7 @@ def list_errors(request):
 
     for log_file in log_files:
         additional = ''
-        for key, value in log_file['additionalInformation'].iteritems():
+        for key, value in list(log_file['additionalInformation'].items()):
             additional += str(key) + ": " + str(value) + "\r\n"
 
         data_details['form-' + str(position) + '-id'] = str(log_file["id"])

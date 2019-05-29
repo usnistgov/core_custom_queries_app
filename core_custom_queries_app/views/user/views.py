@@ -1,6 +1,7 @@
 """
 Describe all the views used by custom_queries
 """
+from builtins import str
 from datetime import datetime
 
 from bson import ObjectId
@@ -159,7 +160,7 @@ def choose_query(request):
                     except ConnectionError as e:
                         log_file = LogFile(application="Custom Queries",
                                            message="Redis not reachable, is it running?",
-                                           additionalInformation={'message': e.message},
+                                           additionalInformation={'message': str(e)},
                                            timestamp=datetime.now())
                         log_file_api.upsert(log_file)
 
@@ -343,7 +344,7 @@ def query_steps(request, query_id):
     except Exception as e:
         # Create the log file from the error
         log_file = LogFile(application="Custom Queries",
-                           message=e.message,
+                           message=str(e),
                            additionalInformation={'query_name': user_query.query.name,
                                                   'step_name': user_query.list_steps[user_query.current_position].step.name,
                                                   'user_choices': user_query.get_previous_choices()},
@@ -532,7 +533,7 @@ def recover_query_steps(request, history_id):
     except Exception as e:
         # Create the log file from the error
         log_file = LogFile(application="Custom Queries",
-                           message=e.message,
+                           message=str(e),
                            additionalInformation={'query_name': user_query.query.name,
                                                   'step_name': user_query.list_steps[
                                                       user_query.current_position].step.name,
@@ -700,7 +701,7 @@ def output_files(request, history_id):
             return redirect(reverse("core_custom_queries_app_index"))
     except Exception as e:
         messages.add_message(request, messages.ERROR,
-                             e.message)
+                             str(e))
         return redirect(reverse("core_custom_queries_app_index"))
 
 

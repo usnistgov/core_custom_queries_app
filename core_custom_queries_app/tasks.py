@@ -1,6 +1,7 @@
 """
 Celery tasks.
 """
+from builtins import str
 from datetime import datetime
 
 from celery.schedules import crontab
@@ -142,7 +143,7 @@ def get_files_to_create():
     except ConnectionError as e:
         log_file = LogFile(application="Custom Queries",
                            message="Redis not reachable, is it running?",
-                           additionalInformation={'message': e.message},
+                           additionalInformation={'message': str(e)},
                            timestamp=datetime.now())
         log_file_api.upsert(log_file)
 
@@ -168,6 +169,6 @@ def run_worker(redis_server):
     except ConnectionError as e:
         log_file = LogFile(application="Custom Queries",
                            message="Redis not reachable, is it running?",
-                           additionalInformation={'message': e.message},
+                           additionalInformation={'message': str(e)},
                            timestamp=datetime.now())
         log_file_api.upsert(log_file)

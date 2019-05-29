@@ -1,5 +1,8 @@
 """ TempUserStep model
 """
+from builtins import map
+from builtins import range
+from builtins import str
 from collections import defaultdict
 
 from bson import ObjectId
@@ -116,7 +119,7 @@ class TempUserStep(Document):
                 dict_choices_file,
                 data_dict['_id']
             )
-        for choices, set_files in dict_choices_file.iteritems():
+        for choices, set_files in list(dict_choices_file.items()):
             self.dict_choices_id_file[choices] = list(set_files)
 
         if len(self.dict_choices_id_file) == 0:
@@ -178,11 +181,11 @@ class TempUserStep(Document):
 
         # Transform and update the data
         new_list_choices_list_files = list()
-        for choice, list_value in choices_id_files_to_save.items():
+        for choice, list_value in list(choices_id_files_to_save.items()):
             new_temp_choice_list_file = TempChoiceListFile()
             new_temp_choice_list_file.choice = choice
             list_bucket_temp = list()
-            chunks = [list_value[x:x + 300] for x in xrange(0, len(list_value), 300)]
+            chunks = [list_value[x:x + 300] for x in range(0, len(list_value), 300)]
             for chunk in chunks:
                 new_bucket = TempBucketIdFiles()
                 new_bucket.list_files = chunk
@@ -239,7 +242,7 @@ class TempUserStep(Document):
         timestamp = str(element["@" + self.step.value])
         if timestamp[-1] == 'Z':
             timestamp = timestamp[:-1]
-        timestamp = map(int, timestamp.translate(translate_dt).split())
+        timestamp = list(map(int, timestamp.translate(translate_dt).split()))
         if (is_datetime_inf_or_equal(time_from, timestamp) and
                 is_datetime_inf_or_equal(timestamp, time_to)) is False:
             return False
@@ -276,10 +279,10 @@ class TempUserStep(Document):
                                              or x in choices]
                     return list_elements_cleaned
             else:
-                time_from = map(int, str(self.choices[0]).
-                                translate(translate_bounds).split())
-                time_to = map(int, str(self.choices[1]).
-                              translate(translate_bounds).split())
+                time_from = list(map(int, str(self.choices[0]).
+                                translate(translate_bounds).split()))
+                time_to = list(map(int, str(self.choices[1]).
+                              translate(translate_bounds).split()))
                 my_filter_date = self.filter_user_choice_date
                 list_elements_cleaned = [
                     x

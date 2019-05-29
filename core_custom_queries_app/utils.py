@@ -1,8 +1,9 @@
 """
 Python functions used in the algorithm.
 """
+from builtins import str
 from collections import defaultdict
-from itertools import chain, ifilterfalse
+from itertools import chain, filterfalse
 from json import dumps
 
 from core_main_app.utils.notifications.mail import send_mail
@@ -43,7 +44,7 @@ def get_header_parents(dict_key):
     else:
         return [
             get_dict_element_header(title, k, v)
-            for k, v in dict_key.iteritems()
+            for k, v in list(dict_key.items())
             if k != "#title"
             ]
 
@@ -76,22 +77,22 @@ def get_common_key_and_specific_header(list_leaves, map_keys):
     for key_hash in list_leaves:
         dict_leaf = map_keys[key_hash]
         if first:
-            for k_first, v_first in dict_leaf.iteritems():
+            for k_first, v_first in list(dict_leaf.items()):
                 dict_key_set_value[k_first] = v_first
-            list_keys = dict_key_set_value.keys()
+            list_keys = list(dict_key_set_value.keys())
             first = False
         else:
-            for k, v in dict_leaf.iteritems():
+            for k, v in list(dict_leaf.items()):
                 if k in list_keys \
                         and k in dict_key_set_value \
                         and v != dict_key_set_value[k]:
                     dict_key_set_value.pop(k)
     node_name = None
-    if "#title" in dict_key_set_value.keys():
+    if "#title" in list(dict_key_set_value.keys()):
         node_name = dict_key_set_value["#title"]
     list_keys_headers_common = [
         (k, get_dict_element_header(node_name, k, v))
-        for k, v in dict_key_set_value.iteritems()]
+        for k, v in list(dict_key_set_value.items())]
     list_keys_unique = list()
     list_specific_header = list()
     for keys_headers_common in list_keys_headers_common:
@@ -116,7 +117,7 @@ def print_bloc(list_specific_header, ddict_title_data, common_keys,
     print_headers(list_specific_header, list_file_xml, list_file_json,
                   list_file_csv)
 
-    for title_leaf, list_dict_leaf in ddict_title_data.iteritems():
+    for title_leaf, list_dict_leaf in list(ddict_title_data.items()):
         print_leaves(title_leaf, list_dict_leaf, common_keys, list_file_xml, list_file_json,
                      list_file_csv)
 
@@ -207,7 +208,7 @@ def print_leaves(title_leaf, list_dict_leaf, common_keys, list_file_xml, list_fi
         list_file_csv.append("," + ", ".join(
             [
                 title_leaf + ": ".join((str(k_leaf), str(v_leaf)))
-                for k_leaf, v_leaf in leaf.iteritems()
+                for k_leaf, v_leaf in list(leaf.items())
                 if k_leaf not in common_keys_to_avoid
                 ]
         ) + "\r\n")
@@ -220,7 +221,7 @@ def print_leaves(title_leaf, list_dict_leaf, common_keys, list_file_xml, list_fi
                         dumps(str(v_leaf))
                     )
                 )
-                for k_leaf, v_leaf in leaf.iteritems()
+                for k_leaf, v_leaf in list(leaf.items())
                 if k_leaf not in common_keys_to_avoid
                 ]
         ) + "\r\n" + 5 * "\t" + "},\r\n" )
@@ -233,7 +234,7 @@ def print_leaves(title_leaf, list_dict_leaf, common_keys, list_file_xml, list_fi
                         "\"" + str(v_leaf) + "\""
                     )
                 )
-                for k_leaf, v_leaf in leaf.iteritems()
+                for k_leaf, v_leaf in list(leaf.items())
                 if k_leaf not in common_keys_to_avoid and k_leaf != "#text"
             ]))
 
@@ -267,7 +268,7 @@ def explore_star(list_elements):
     :param list_elements: List of element to solve.
     :return: List of elements to replace the star.
     """
-    return ifilterfalse(lambda x: x[0] in ['_', '@', "#"], set(chain.from_iterable(list_elements)))
+    return filterfalse(lambda x: x[0] in ['_', '@', "#"], set(chain.from_iterable(list_elements)))
 
 
 def get_general_key_output_dictionary(element_cleaned, element_title):
@@ -277,7 +278,7 @@ def get_general_key_output_dictionary(element_cleaned, element_title):
     :param element_title: Element title.
     :return: Element dictionary.
     """
-    dict_key_general = {x: y for x, y in element_cleaned.iteritems() if x[0] in ("@", "#")}
+    dict_key_general = {x: y for x, y in list(element_cleaned.items()) if x[0] in ("@", "#")}
     dict_key_general["#title"] = element_title
     return dict_key_general
 
