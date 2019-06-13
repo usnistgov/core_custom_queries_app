@@ -1,11 +1,7 @@
 """ Custom Queries models
 """
 from __future__ import division
-
-from builtins import object
-from builtins import range
 # FIXME: these models cannot be split into components for now because of circular dependencies
-from builtins import str
 from datetime import datetime
 from string import maketrans
 

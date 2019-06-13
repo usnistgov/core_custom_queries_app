@@ -1,7 +1,6 @@
 """
 Describe all the view admin-only
 """
-from builtins import str
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required

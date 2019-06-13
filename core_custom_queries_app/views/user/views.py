@@ -1,7 +1,6 @@
 """
 Describe all the views used by custom_queries
 """
-from builtins import str
 from datetime import datetime
 
 from bson import ObjectId

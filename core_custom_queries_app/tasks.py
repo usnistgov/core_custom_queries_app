@@ -1,7 +1,6 @@
 """
 Celery tasks.
 """
-from builtins import str
 from datetime import datetime
 
 from celery.schedules import crontab

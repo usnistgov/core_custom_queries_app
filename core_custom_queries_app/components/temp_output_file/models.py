@@ -1,7 +1,5 @@
 """ TempBucketOutputFiles model
 """
-from builtins import range
-from builtins import str
 
 from django_mongoengine import Document, fields
 from mongoengine import errors as mongoengine_errors

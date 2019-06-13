@@ -1,8 +1,5 @@
 """ TempUserStep model
 """
-from builtins import map
-from builtins import range
-from builtins import str
 from collections import defaultdict
 
 from bson import ObjectId

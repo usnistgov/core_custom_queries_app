@@ -1,7 +1,6 @@
 """
 Python functions used in the algorithm.
 """
-from builtins import str
 from collections import defaultdict
 from itertools import chain, filterfalse
 from json import dumps
