@@ -1,6 +1,7 @@
 """ Custom Queries models
 """
 from __future__ import division
+
 # FIXME: these models cannot be split into components for now because of circular dependencies
 from datetime import datetime
 from string import maketrans
@@ -11,6 +12,7 @@ from django.db import models
 from django_mongoengine import fields, Document
 from mongoengine import errors as mongoengine_errors
 from past.utils import old_div
+from qdr.settings import REDIS_URL
 from redis import Redis, ConnectionError
 
 from core_custom_queries_app.components.dyn_query.models import DynQuery
@@ -29,7 +31,6 @@ from core_main_app.commons.exceptions import DoesNotExist, ModelError
 from core_main_app.components.template.models import Template
 from core_main_app.permissions.utils import get_formatted_name
 from core_main_app.system import api as system_api
-from qdr.settings import REDIS_URL
 
 
 class CustomQueries(models.Model):

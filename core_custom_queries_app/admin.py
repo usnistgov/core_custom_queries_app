@@ -1,11 +1,11 @@
 """
 Url file used by django for admin's views.
 """
-from django.contrib import admin
 from django.conf.urls import url
+from django.contrib import admin
 
-from core_custom_queries_app.views.admin import views as admin_views
 from core_custom_queries_app.views.admin import ajax as admin_ajax
+from core_custom_queries_app.views.admin import views as admin_views
 
 admin_urls = [
     url(r'^custom_queries/list$', admin_views.queries_list,

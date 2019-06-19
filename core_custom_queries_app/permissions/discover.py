@@ -1,9 +1,11 @@
 """ Initialize permissions for core custom queries app
 """
 from __future__ import print_function
+
 from django.contrib.auth.models import Group, Permission
-import core_main_app.permissions.rights as main_rights
+
 import core_custom_queries_app.permissions.rights as custom_queries_rights
+import core_main_app.permissions.rights as main_rights
 
 
 def init_permissions():

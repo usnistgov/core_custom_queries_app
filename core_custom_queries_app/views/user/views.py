@@ -10,6 +10,7 @@ from django.forms import formset_factory
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from mongoengine import ValidationError
+from qdr.settings import REDIS_URL
 from redis import Redis, ConnectionError
 
 import core_main_app.utils.decorators as decorators
@@ -28,7 +29,6 @@ from core_main_app.commons.exceptions import DoesNotExist
 from core_main_app.components.template_version_manager import api as template_version_manager_api
 from core_main_app.utils.file import get_file_http_response
 from core_main_app.utils.rendering import render
-from qdr.settings import REDIS_URL
 
 
 @decorators.permission_required(content_type=rights.custom_queries_content_type,

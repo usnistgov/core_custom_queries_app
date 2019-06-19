@@ -5,6 +5,7 @@ from datetime import datetime
 
 from celery.schedules import crontab
 from celery.task import periodic_task
+from qdr.settings import REDIS_URL
 from redis import Redis, ConnectionError
 
 from core_custom_queries_app.components.history_query import api as history_query_api
@@ -19,7 +20,6 @@ from core_custom_queries_app.components.temp_user_query import api as temp_user_
 from core_custom_queries_app.components.temp_user_step import api as temp_user_step_api
 from core_custom_queries_app.utils import flat_list
 from core_main_app.commons.exceptions import DoesNotExist
-from qdr.settings import REDIS_URL
 
 
 @periodic_task(run_every=crontab(minute=0, hour=0))
