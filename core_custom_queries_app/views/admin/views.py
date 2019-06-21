@@ -1,6 +1,7 @@
 """
 Describe all the view admin-only
 """
+import logging
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -19,6 +20,8 @@ from core_main_app.components.template import api as template_api
 from core_main_app.components.template_version_manager import api as template_version_manager_api
 from core_main_app.utils.pagination.django_paginator.results_paginator import ResultsPaginator
 from core_main_app.utils.rendering import admin_render
+
+logger = logging.getLogger(__name__)
 
 
 @staff_member_required
@@ -329,8 +332,8 @@ def list_errors(request):
                     try:
                         logfile = log_file_api.get_by_id(id_object)
                         logfile.delete_database()
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.warning("list_errors threw an exception: {0}".format(str(e)))
 
     # Get the log files
     log_file_list = log_file_api.get_all().order_by("-timestamp")

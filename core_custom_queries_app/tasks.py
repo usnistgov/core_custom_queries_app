@@ -1,6 +1,7 @@
 """
 Celery tasks.
 """
+import logging
 from datetime import datetime
 
 from celery.schedules import crontab
@@ -21,6 +22,8 @@ from core_custom_queries_app.components.temp_user_step import api as temp_user_s
 from core_custom_queries_app.utils import flat_list
 from core_main_app.commons.exceptions import DoesNotExist
 
+logger = logging.getLogger(__name__)
+
 
 @periodic_task(run_every=crontab(minute=0, hour=0))
 def clean_mongo_db():
@@ -38,10 +41,10 @@ def clean_mongo_db():
             if (datetime_now - user_query.last_modified).total_seconds() > (60 * 60 * 24 * 7):
                 try:
                     history_query.delete_database()
-                except:
-                    pass
-        except:
-            pass
+                except Exception as e:
+                    logger.warning("clean_mongo_db threw an exception: {0}".format(str(e)))
+        except Exception as e:
+            logger.warning("clean_mongo_db threw an exception: {0}".format(str(e)))
 
     # Delete orphan HistoryQuery
     all_history_id_to_keep = temp_user_query_api.get_all().values_list('history')
@@ -162,8 +165,9 @@ def run_worker(redis_server):
             try:
                 query = temp_user_query_api.get_by_id(current_id)
                 query.create_outputs_file()
-            except DoesNotExist:
-                pass
+            except DoesNotExist as e:
+                logger.warning("run_worker threw an exception: {0}".format(str(e)))
+
             redis_server.set('current_id', "None")
     except ConnectionError as e:
         log_file = LogFile(application="Custom Queries",

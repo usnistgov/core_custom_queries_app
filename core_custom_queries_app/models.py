@@ -2,6 +2,7 @@
 """
 from __future__ import division
 
+import logging
 # FIXME: these models cannot be split into components for now because of circular dependencies
 from datetime import datetime
 from string import maketrans
@@ -31,6 +32,8 @@ from core_main_app.commons.exceptions import DoesNotExist, ModelError
 from core_main_app.components.template.models import Template
 from core_main_app.permissions.utils import get_formatted_name
 from core_main_app.system import api as system_api
+
+logger = logging.getLogger(__name__)
 
 
 class CustomQueries(models.Model):
@@ -174,8 +177,8 @@ class TempUserQuery(Document):
             try:
                 obj_step = TempUserStep.objects.get(id=step.id)
                 obj_step.delete_database()
-            except:
-                pass
+            except Exception as e:
+                logger.warning("delete_database threw an exception: {0}".format(str(e)))
 
         # Delete if to treat
         queries = QueryToTreat.objects.filter(query=self)
@@ -193,20 +196,20 @@ class TempUserQuery(Document):
             try:
                 temp_file = TempOutputFile.objects.get(id=self.str_id_file_json)
                 temp_file.delete_database()
-            except DoesNotExist:
-                pass
+            except DoesNotExist as e:
+                logger.warning("delete_database threw an exception: {0}".format(str(e)))
         if self.str_id_file_xml != "":
             try:
                 temp_file = TempOutputFile.objects.get(id=self.str_id_file_xml)
                 temp_file.delete_database()
-            except DoesNotExist:
-                pass
+            except DoesNotExist as e:
+                logger.warning("delete_database threw an exception: {0}".format(str(e)))
         if self.str_id_file_csv != "":
             try:
                 temp_file = TempOutputFile.objects.get(id=self.str_id_file_csv)
                 temp_file.delete_database()
-            except DoesNotExist:
-                pass
+            except DoesNotExist as e:
+                logger.warning("delete_database threw an exception: {0}".format(str(e)))
 
         # DeleteInfoRedis
         try:
@@ -214,10 +217,11 @@ class TempUserQuery(Document):
             if redis_server.exists("list_ids"):
                 try:
                     redis_server.lrem("list_ids", str(self.id), 0)
-                except AttributeError:
-                    pass
-        except ConnectionError:
-            pass
+                except AttributeError as e:
+                    logger.warning("delete_database threw an exception: {0}".format(str(e)))
+
+        except ConnectionError as e:
+            logger.warning("delete_database threw an exception: {0}".format(str(e)))
 
         self.delete()
 
@@ -887,8 +891,8 @@ class TempUserQuery(Document):
             history = HistoryQuery.objects.get(query_id=str(self.id))
             user = User.objects.get(id=history.user_id)
             send_mail_query_end(query=self, user=user)
-        except:
-            pass
+        except Exception as e:
+            logger.warning("create_outputs_file threw an exception: {0}".format(str(e)))
         self.update_status(2)
 
     def update_status(self, new_status):

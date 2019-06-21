@@ -1,5 +1,6 @@
 """ TempUserStep model
 """
+import logging
 from collections import defaultdict
 
 from bson import ObjectId
@@ -10,6 +11,8 @@ from core_custom_queries_app.components.temp_bucket_id_files.models import TempB
 from core_custom_queries_app.components.temp_choice_list_file.models import TempChoiceListFile
 from core_custom_queries_app.exceptions import EmptyChoicesFromQuery
 from core_custom_queries_app.utils import flat_list, explore_star, is_datetime_inf_or_equal
+
+logger = logging.getLogger(__name__)
 
 
 class TempUserStep(Document):
@@ -50,8 +53,8 @@ class TempUserStep(Document):
             try:
                 choices_id_file_obj = TempChoiceListFile.objects.get(id=choices_id_file.id)
                 choices_id_file_obj.delete_database()
-            except:
-                pass
+            except Exception as e:
+                logger.warning("delete_database threw an exception: {0}".format(str(e)))
 
         self.delete()
 

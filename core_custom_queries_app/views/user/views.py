@@ -1,6 +1,7 @@
 """
 Describe all the views used by custom_queries
 """
+import logging
 from datetime import datetime
 
 from bson import ObjectId
@@ -29,6 +30,8 @@ from core_main_app.commons.exceptions import DoesNotExist
 from core_main_app.components.template_version_manager import api as template_version_manager_api
 from core_main_app.utils.file import get_file_http_response
 from core_main_app.utils.rendering import render
+
+logger = logging.getLogger(__name__)
 
 
 @decorators.permission_required(content_type=rights.custom_queries_content_type,
@@ -153,8 +156,8 @@ def choose_query(request):
                             try:
                                 position_id = list_id.index(query_id) + 1
                                 h_message = "Pending - Waiting list: " + str(position_id) + "/" + str(len(list_id))
-                            except ValueError:
-                                pass
+                            except ValueError as e:
+                                logger.warning("choose_query threw an exception: {0}".format(str(e)))
 
                     except ConnectionError as e:
                         log_file = LogFile(application="Custom Queries",
@@ -167,8 +170,9 @@ def choose_query(request):
                 data['form-' + str(position) + '-status'] = history_query.status
                 data['form-' + str(position) + '-DELETE'] = ''
                 position += 1
-            except DoesNotExist:
-                pass
+            except DoesNotExist as e:
+                logger.warning("choose_query threw an exception: {0}".format(str(e)))
+
         formset = formset_history(data)
 
     context = {'number_queries': number_queries,
@@ -351,8 +355,8 @@ def query_steps(request, query_id):
         log_file_api.upsert(log_file)
         try:
             user_query.update_message("Error during query step.")
-        except ValidationError:
-            pass
+        except ValidationError as e:
+            logger.warning("query_step threw an exception: {0}".format(str(e)))
 
         messages.add_message(request, messages.ERROR,
                              "An internal problem occurred, the administrator has been notified.")
@@ -541,8 +545,8 @@ def recover_query_steps(request, history_id):
         log_file_api.upsert(log_file)
         try:
             user_query.update_message("Error during query step.")
-        except ValidationError:
-            pass
+        except ValidationError as e:
+            logger.warning("recover_query_steps threw an exception: {0}".format(str(e)))
 
         messages.add_message(request, messages.ERROR,
                              "An internal problem occurred, the administrator has been notified.")

@@ -1,8 +1,12 @@
 """ TempChoiceListFile model
 """
+import logging
+
 from django_mongoengine import Document, fields
 
 from core_custom_queries_app.components.temp_bucket_id_files.models import TempBucketIdFiles
+
+logger = logging.getLogger(__name__)
 
 
 class TempChoiceListFile(Document):
@@ -31,7 +35,7 @@ class TempChoiceListFile(Document):
             try:
                 bucket_obj = TempBucketIdFiles.objects.get(id=bucket.id)
                 bucket_obj.delete_database()
-            except:
-                pass
+            except Exception as e:
+                logger.warning("delete_database threw an exception: {0}".format(str(e)))
 
         self.delete()
