@@ -147,7 +147,7 @@ def choose_query(request):
                     redis_server = Redis.from_url(REDIS_URL)
                     try:
                         if redis_server.exists("current_id"):
-                            current_id = redis_server.get("current_id")
+                            current_id = redis_server.get("current_id").decode()
                             if current_id == query_id:
                                 h_message = "Pending: The file creation will begin shortly."
 

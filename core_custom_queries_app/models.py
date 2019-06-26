@@ -5,7 +5,6 @@ from __future__ import division
 import logging
 # FIXME: these models cannot be split into components for now because of circular dependencies
 from datetime import datetime
-from string import maketrans
 
 from bson import ObjectId
 from django.contrib.auth.models import User
@@ -668,8 +667,8 @@ class TempUserQuery(Document):
     def init_data_result(self):
         """ Initialize the variables to create the files. Create the files and save them into the database.
         """
-        translate_dt = maketrans("-:.T", '    ')  # Translate object for element date time
-        translate_bounds = maketrans("-:", '  ')  # Translate object for bounds date time
+        translate_dt = str.maketrans("-:.T", '    ')  # Translate object for element date time
+        translate_bounds = str.maketrans("-:", '  ')  # Translate object for bounds date time
         max_depth = self.number_of_step
 
         # Create the query

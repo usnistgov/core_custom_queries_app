@@ -137,7 +137,7 @@ def get_files_to_create():
         if not Redis.exists(redis_server, 'is_working'):
             Redis.set(redis_server, 'is_working', False)
 
-        if Redis.get(redis_server, 'is_working') == 'False':
+        if Redis.get(redis_server, 'is_working').decode() == 'False':
             Redis.set(redis_server, 'is_working', True)
             if Redis.exists(redis_server, 'list_ids'):
                 run_worker(redis_server)
@@ -160,7 +160,7 @@ def run_worker(redis_server):
     """
     try:
         while Redis.exists(redis_server, 'list_ids'):
-            current_id = Redis.lpop(redis_server, 'list_ids')
+            current_id = Redis.lpop(redis_server, 'list_ids').decode()
             redis_server.set('current_id', current_id)
             try:
                 query = temp_user_query_api.get_by_id(current_id)
